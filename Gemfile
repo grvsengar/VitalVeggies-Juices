@@ -17,7 +17,7 @@ gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 gem "pg_search"
-gem "avo", "~> 3.0"
+gem "avo", "~> 3.31"
 gem "carrierwave", "~> 3.0"
 gem "pundit"
 
