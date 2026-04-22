@@ -1,0 +1,42 @@
+<% content_for :title, "Manager Access" %>
+
+<section class="section">
+  <div class="container">
+    <div class="portal-content-grid">
+      <div class="form-card">
+        <p class="eyebrow">Admin action</p>
+        <h2>Create manager</h2>
+        <%= form_with model: @manager, url: admin_managers_path, class: "stack-form" do |form| %>
+          <%= form.text_field :name, class: "field", placeholder: "Manager name" %>
+          <%= form.email_field :email, class: "field", placeholder: "Manager email" %>
+          <%= form.submit "Send invite email", class: "button button--primary" %>
+        <% end %>
+        <p class="summary-note">The invite email contains a registration link. The manager sets their own password from that link.</p>
+      </div>
+
+      <div class="summary-card">
+        <p class="eyebrow">Responsibilities</p>
+        <h2>Manager role scope</h2>
+        <ul class="portal-list">
+          <% role_responsibilities(:manager).each do |responsibility| %>
+            <li><%= responsibility %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="section-heading">
+        <div><h2>Managers</h2></div>
+      </div>
+      <div class="portal-table">
+        <% @managers.each do |manager| %>
+          <div class="portal-table__row">
+            <span><%= manager.name.presence || "Pending profile" %> · <%= manager.email %></span>
+            <span><%= manager.registered? ? "Registered" : "Invitation pending" %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>

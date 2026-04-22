@@ -1,0 +1,15 @@
+<% content_for :title, "Track Your Order" %>
+
+<section class="section">
+  <div class="container narrow">
+    <div class="form-card">
+      <p class="eyebrow">Order tracking</p>
+      <h1>Track your order status</h1>
+      <%= form_with url: track_order_path, method: :post, class: "stack-form" do |form| %>
+        <%= form.text_field :order_number, placeholder: "Order number", class: "field" %>
+        <%= form.email_field :email, placeholder: "Email address used at checkout", class: "field" %>
+        <%= form.submit "Find order", class: "button button--primary" %>
+      <% end %>
+    </div>
+  </div>
+</section>

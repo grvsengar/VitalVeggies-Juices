@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= page_title(content_for(:title)) %></title>
+    <meta name="description" content="<%= page_description(content_for(:meta_description)) %>">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="portal-body <%= "portal-body--manager" if portal_signed_in?(:manager) && !@hide_portal_nav %>">
+    <% if portal_signed_in?(:manager) && !@hide_portal_nav %>
+      <div class="manager-shell">
+        <aside class="manager-sidebar">
+          <%= link_to manager_root_path, class: "manager-brand" do %>
+            <span class="manager-brand__mark">VV</span>
+            <span>
+              <strong>Vital Manager</strong>
+              <small>Daily operations</small>
+            </span>
+          <% end %>
+
+          <nav class="manager-nav" aria-label="Manager navigation">
+            <%= link_to manager_root_path, class: "manager-nav__link #{'manager-nav__link--active' if current_page?(manager_root_path)}" do %>
+              <span>Dashboard</span>
+            <% end %>
+            <%= link_to manager_products_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/products'}" do %>
+              <span>Products</span>
+            <% end %>
+            <%= link_to manager_inventory_index_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/inventory'}" do %>
+              <span>Inventory</span>
+            <% end %>
+            <%= link_to manager_orders_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/orders'}" do %>
+              <span>Orders</span>
+            <% end %>
+            <%= link_to manager_categories_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/categories'}" do %>
+              <span>Categories</span>
+            <% end %>
+            <%= link_to products_path, class: "manager-nav__link" do %>
+              <span>Storefront</span>
+            <% end %>
+          </nav>
+
+          <div class="manager-sidebar__footer">
+            <div class="manager-user-card">
+              <span><%= current_user.name.to_s.first.presence || "M" %></span>
+              <div>
+                <strong><%= current_user.name.presence || "Manager" %></strong>
+                <small><%= current_user.email %></small>
+              </div>
+            </div>
+            <%= button_to "Logout", manager_logout_path, method: :delete, class: "manager-logout" %>
+          </div>
+        </aside>
+
+        <main class="manager-main">
+          <div class="manager-flash-stack">
+            <% flash.each do |type, message| %>
+              <div class="flash flash--<%= type %>"><%= message %></div>
+            <% end %>
+          </div>
+
+          <%= yield %>
+        </main>
+      </div>
+    <% elsif !@hide_portal_nav %>
+      <header class="portal-header">
+        <div class="container portal-header__inner">
+          <div>
+            <p class="portal-header__eyebrow"><%= current_user&.role&.titleize %> Portal</p>
+            <h1><%= current_user&.name || business_details[:name] %></h1>
+          </div>
+          <nav class="portal-nav">
+            <% if portal_signed_in?(:admin) %>
+              <%= nav_link_to "Dashboard", admin_root_path, class: "portal-nav__link" %>
+              <%= nav_link_to "Managers", admin_managers_path, class: "portal-nav__link" %>
+              <%= nav_link_to "Products", admin_products_path, class: "portal-nav__link" %>
+              <%= nav_link_to "Categories", admin_categories_path, class: "portal-nav__link" %>
+              <%= nav_link_to "Orders", admin_orders_path, class: "portal-nav__link" %>
+              <%= button_to "Logout", admin_logout_path, method: :delete, class: "button button--ghost" %>
+            <% elsif portal_signed_in?(:manager) %>
+              <%= nav_link_to "Dashboard", manager_root_path, class: "portal-nav__link" %>
+              <%= nav_link_to "Inventory", manager_inventory_index_path, class: "portal-nav__link" %>
+              <%= nav_link_to "Orders", manager_orders_path, class: "portal-nav__link" %>
+              <%= button_to "Logout", manager_logout_path, method: :delete, class: "button button--ghost" %>
+            <% elsif buyer_signed_in? %>
+              <%= nav_link_to "Buyer Home", buyer_root_path, class: "portal-nav__link" %>
+              <%= button_to "Logout", buyer_logout_path, method: :delete, class: "button button--ghost" %>
+            <% end %>
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        <div class="container flash-stack">
+          <% flash.each do |type, message| %>
+            <div class="flash flash--<%= type %>"><%= message %></div>
+          <% end %>
+        </div>
+
+        <%= yield %>
+      </main>
+    <% else %>
+      <main>
+        <div class="container flash-stack">
+          <% flash.each do |type, message| %>
+            <div class="flash flash--<%= type %>"><%= message %></div>
+          <% end %>
+        </div>
+
+        <%= yield %>
+      </main>
+    <% end %>
+  </body>
+</html>

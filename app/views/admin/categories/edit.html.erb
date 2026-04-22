@@ -1,0 +1,7 @@
+<% content_for :title, "Edit Category" %>
+
+<section class="section">
+  <div class="container narrow">
+    <%= render "form", category: @category, title: "Edit #{@category.name}", submit_label: "Save category" %>
+  </div>
+</section>

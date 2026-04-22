@@ -1,0 +1,44 @@
+<% content_for :title, "Manager Inventory" %>
+
+<section class="manager-page">
+  <div class="manager-page__header">
+    <div>
+      <h1>Inventory</h1>
+      <p><%= Date.current.strftime("%A %d %B, %Y") %></p>
+    </div>
+    <%= link_to "Low stock only", manager_inventory_index_path(stock: "low_stock"), class: "manager-primary-action" %>
+  </div>
+
+  <%= form_with url: manager_inventory_index_path, method: :get, class: "manager-toolbar" do |form| %>
+    <%= form.search_field :q, value: params[:q], placeholder: "Search products...", class: "manager-search" %>
+    <%= form.collection_select :category_id, @categories, :id, :name, { include_blank: "All categories", selected: params[:category_id] }, class: "manager-select" %>
+    <%= form.select :stock, [["All stock", ""], ["Sold out", "sold_out"], ["Low stock", "low_stock"], ["Healthy", "healthy"]], { selected: params[:stock] }, class: "manager-select" %>
+    <%= form.submit "Filter", class: "manager-primary-action" %>
+  <% end %>
+
+  <article class="manager-card">
+    <div class="manager-table manager-table--products">
+      <div class="manager-table__head">
+        <span>Product</span>
+        <span>SKU</span>
+        <span>Category</span>
+        <span>Price</span>
+        <span>Stock</span>
+        <span>Status</span>
+      </div>
+      <% @products.each do |product| %>
+        <%= link_to edit_manager_inventory_path(product), class: "manager-table__row" do %>
+          <span class="manager-product-cell">
+            <%= image_tag product_image_path(product), alt: product.name %>
+            <strong><%= product.name %></strong>
+          </span>
+          <span><%= product.sku %></span>
+          <span><%= product.category.name %></span>
+          <span><%= money(product.price) %></span>
+          <span><%= product.stock_quantity %></span>
+          <span class="<%= stock_badge_class(product) %>"><%= stock_badge(product) %></span>
+        <% end %>
+      <% end %>
+    </div>
+  </article>
+</section>

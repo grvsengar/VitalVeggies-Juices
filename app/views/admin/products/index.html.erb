@@ -1,0 +1,37 @@
+<% content_for :title, "Admin Products" %>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading admin-catalog-heading">
+      <div>
+        <p class="eyebrow">Admin</p>
+        <h2>Catalog management</h2>
+        <p>Admins own product setup, pricing, imagery, categories, and storefront visibility. Managers update day-to-day stock from the inventory portal.</p>
+      </div>
+      <div class="admin-action-row">
+        <%= link_to "Manage categories", admin_categories_path, class: "button button--ghost admin-action-button" %>
+        <%= link_to "Add product", new_admin_product_path, class: "button button--primary admin-action-button" %>
+      </div>
+    </div>
+
+    <div class="admin-product-grid">
+      <% @products.each do |product| %>
+        <article class="summary-card admin-product-card">
+          <div class="admin-product-thumb">
+            <%= image_tag product_image_path(product), alt: product.name %>
+          </div>
+          <div class="admin-product-card__title">
+            <strong><%= product.name %></strong>
+            <span class="<%= stock_badge_class(product) %>"><%= stock_badge(product) %></span>
+          </div>
+          <p class="admin-product-card__meta"><%= product.sku %> · <%= product.category.name %> · <%= product.product_kind.humanize %></p>
+          <p class="admin-product-card__meta"><%= money(product.price) %> · <%= product.stock_quantity %> units · <%= product.active? ? "Visible" : "Hidden" %></p>
+          <div class="admin-action-row admin-product-card__actions">
+            <%= link_to "Edit", edit_admin_product_path(product), class: "button button--ghost button--small" %>
+            <%= button_to "Delete", admin_product_path(product), method: :delete, class: "button button--ghost button--small", form: { data: { turbo_confirm: "Delete #{product.name}? Products with order history will be deactivated instead." } } %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  </div>
+</section>

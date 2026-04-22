@@ -1,0 +1,45 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  order_number: VVJ-ORDER-1001
+  customer_name: Test Customer One
+  email: customer-one@example.com
+  phone: "9876543201"
+  address_line1: 101 Test Street
+  address_line2: Apt 1
+  city: Bengaluru
+  state: Karnataka
+  postal_code: "560001"
+  notes: Test order one
+  status: 1
+  subtotal: 9.99
+  discount_total: 9.99
+  delivery_fee: 9.99
+  total: 9.99
+  payment_method: cash_on_delivery
+  payment_status: pending
+  delivery_window: 9AM-12PM
+  tracking_token: track-token-one
+  coupon_code: TEST10
+
+two:
+  order_number: VVJ-ORDER-1002
+  customer_name: Test Customer Two
+  email: customer-two@example.com
+  phone: "9876543202"
+  address_line1: 202 Test Avenue
+  address_line2: Suite 2
+  city: Bengaluru
+  state: Karnataka
+  postal_code: "560002"
+  notes: Test order two
+  status: 1
+  subtotal: 9.99
+  discount_total: 9.99
+  delivery_fee: 9.99
+  total: 9.99
+  payment_method: cash_on_delivery
+  payment_status: pending
+  delivery_window: 12PM-3PM
+  tracking_token: track-token-two
+  coupon_code: TEST20

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= page_title(content_for(:title)) %></title>
+    <meta name="description" content="<%= page_description(content_for(:meta_description)) %>">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <% unless @hide_site_chrome %>
+      <div class="topbar">
+        <div class="container topbar__inner">
+          <div class="topbar__item"><strong>Call:</strong> <%= business_details[:phone] %></div>
+          <div class="topbar__item"><strong>Address:</strong> <%= business_details[:address] %></div>
+          <div class="topbar__item"><strong>Hours:</strong> <%= business_details[:hours] %></div>
+        </div>
+      </div>
+
+      <header class="site-header">
+        <div class="container site-header__inner">
+          <%= link_to root_path, class: "brand" do %>
+            <span class="brand__badge">VV</span>
+            <span>
+              <strong><%= business_details[:name] %></strong>
+              <small>Fresh juices, fruit, and vegetables</small>
+            </span>
+          <% end %>
+
+          <nav class="site-nav">
+            <%= nav_link_to "Home", root_path %>
+            <%= nav_link_to "Shop", products_path %>
+            <%= nav_link_to "Cart", cart_path %>
+            <%= nav_link_to "Blog", articles_path %>
+            <%= nav_link_to "About", about_path %>
+            <%= nav_link_to "FAQs", faqs_path %>
+            <%= nav_link_to "Contact", contact_path %>
+          </nav>
+
+          <div class="site-header__actions">
+            <%= link_to "Track Order", track_order_path, class: "button button--ghost" %>
+            <% if current_user %>
+              <% if current_user.admin? %>
+                <%= link_to "Dashboard", "/avo", class: "button button--ghost" %>
+                <%= button_to "Log out", admin_logout_path, method: :delete, class: "button button--ghost" %>
+              <% elsif current_user.manager? %>
+                <%= link_to "Dashboard", manager_root_path, class: "button button--ghost" %>
+                <%= button_to "Log out", manager_logout_path, method: :delete, class: "button button--ghost" %>
+              <% elsif current_user.buyer? %>
+                <%= link_to "My Account", buyer_root_path, class: "button button--ghost" %>
+                <%= button_to "Log out", buyer_logout_path, method: :delete, class: "button button--ghost" %>
+              <% end %>
+            <% else %>
+              <%= link_to "Sign in", login_path, class: "button button--ghost" %>
+            <% end %>
+            <%= link_to "Cart (#{current_cart.count})", cart_path, class: "button button--primary", id: "cart-link" %>
+          </div>
+        </div>
+      </header>
+    <% end %>
+
+    <main>
+      <% unless @hide_site_chrome %>
+        <div id="flash" class="container flash-stack">
+          <% flash.each do |type, message| %>
+            <div class="flash flash--<%= type %>"><%= message %></div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </main>
+
+    <% unless @hide_site_chrome %>
+      <footer class="site-footer">
+        <div class="container site-footer__grid">
+          <div>
+            <h3><%= business_details[:name] %></h3>
+            <p>Farm-fresh juices, hand-picked fruit, and local vegetables with easy online ordering and neighborhood delivery.</p>
+          </div>
+          <div>
+            <h4>Visit</h4>
+            <p><%= business_details[:address] %></p>
+            <p><%= business_details[:hours] %></p>
+          </div>
+          <div>
+            <h4>Contact</h4>
+            <p><%= business_details[:phone] %></p>
+            <p><%= mail_to business_details[:email] %></p>
+            <p><%= link_to "Instagram", business_details.dig(:social_links, :instagram), target: "_blank", rel: "noreferrer" %> / <%= link_to "Facebook", business_details.dig(:social_links, :facebook), target: "_blank", rel: "noreferrer" %></p>
+          </div>
+          <div>
+            <h4>Quick Links</h4>
+            <p><%= link_to "Delivery Info", delivery_path %></p>
+            <p><%= link_to "Privacy Policy", privacy_policy_path %></p>
+            <p><%= link_to "Terms & Conditions", terms_and_conditions_path %></p>
+          </div>
+        </div>
+      </footer>
+    <% end %>
+  </body>
+</html>

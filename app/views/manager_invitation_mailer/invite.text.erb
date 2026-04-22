@@ -1,0 +1,10 @@
+Manager Portal Invitation
+
+Hello <%= @manager.name.presence || "Manager" %>,
+
+<%= @inviter&.name || "An admin" %> created your manager access for Vital Veggies & Juices.
+
+Complete your registration here:
+<%= manager_register_url(@manager.invitation_token) %>
+
+After registration, sign in to the manager portal to handle inventory and fulfilment responsibilities.

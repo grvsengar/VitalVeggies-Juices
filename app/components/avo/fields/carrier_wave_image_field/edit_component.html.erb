@@ -1,0 +1,18 @@
+<%= field_wrapper(**field_wrapper_args) do %>
+  <% if @field.image_url.present? %>
+    <div class="mb-3">
+      <%= image_tag @field.image_url,
+        width: 180,
+        style: "border-radius: #{@field.radius}px; max-width: 100%; height: auto;"
+      %>
+    </div>
+  <% end %>
+
+  <%= @form.file_field @field.id,
+    accept: @field.accept,
+    data: @field.get_html(:data, view: view, element: :input),
+    disabled: disabled?,
+    autofocus: @autofocus,
+    class: "w-full"
+  %>
+<% end %>

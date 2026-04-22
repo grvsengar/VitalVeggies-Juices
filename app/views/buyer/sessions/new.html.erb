@@ -1,0 +1,25 @@
+<% content_for :title, "Buyer Login" %>
+
+<section class="portal-auth">
+  <div class="container portal-auth__grid">
+    <div class="portal-auth__intro">
+      <p class="eyebrow">Buyer account</p>
+      <h1>Customer login for order review</h1>
+      <ul class="portal-list">
+        <% role_responsibilities(:buyer).each do |responsibility| %>
+          <li><%= responsibility %></li>
+        <% end %>
+      </ul>
+      <p class="portal-auth__hint">Default seed credential: <strong>buyer@vitalveggies.in</strong> / <strong>Buyer@12345</strong></p>
+    </div>
+
+    <div class="form-card">
+      <h2>Sign in as buyer</h2>
+      <%= form_with url: buyer_login_path, class: "stack-form" do |form| %>
+        <%= form.email_field :email, class: "field", placeholder: "Buyer email" %>
+        <%= form.password_field :password, class: "field", placeholder: "Password" %>
+        <%= form.submit "Open Buyer Account", class: "button button--primary button--full" %>
+      <% end %>
+    </div>
+  </div>
+</section>

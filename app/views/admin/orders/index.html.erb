@@ -1,0 +1,21 @@
+<% content_for :title, "Admin Orders" %>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Admin</p>
+        <h2>Orders and payments</h2>
+      </div>
+    </div>
+
+    <div class="portal-table">
+      <% @orders.each do |order| %>
+        <div class="portal-table__row">
+          <span><%= link_to order.order_number, admin_order_path(order) %> · <%= order.customer_name %></span>
+          <span><%= order.status.humanize %> · <%= order.payment_status.humanize %> · <%= money(order.total) %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>

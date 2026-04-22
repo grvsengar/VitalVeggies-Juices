@@ -1,0 +1,55 @@
+<div class="form-card">
+  <p class="eyebrow">Catalog owner</p>
+  <h2><%= title %></h2>
+
+  <% if product.errors.any? %>
+    <div class="flash flash--alert">
+      <strong>Check these fields:</strong>
+      <%= product.errors.full_messages.to_sentence %>
+    </div>
+  <% end %>
+
+  <%= form_with model: [:admin, product], class: "stack-form", html: { multipart: true } do |form| %>
+    <div class="admin-media-field">
+      <div>
+        <p class="summary-note">Product image</p>
+        <div class="admin-product-preview">
+          <%= image_tag product_image_path(product), alt: product.name.presence || "Product preview" %>
+        </div>
+      </div>
+      <div class="stack-form">
+        <%= form.file_field :image, class: "field", accept: "image/png,image/jpeg,image/webp,image/gif" %>
+        <%= form.hidden_field :image_cache %>
+        <% if product.image.present? %>
+          <label class="checkbox"><%= form.check_box :remove_image %> Remove current image</label>
+        <% end %>
+      </div>
+    </div>
+
+    <%= form.text_field :name, class: "field", placeholder: "Product name" %>
+    <%= form.text_field :slug, class: "field", placeholder: "Slug (leave blank to auto-generate)" %>
+    <%= form.text_field :sku, class: "field", placeholder: "SKU (leave blank to auto-generate)" %>
+    <%= form.text_area :description, rows: 4, class: "field", placeholder: "Description" %>
+    <%= form.text_area :ingredients, rows: 3, class: "field", placeholder: "Ingredients or package contents" %>
+
+    <div class="two-column">
+      <%= form.number_field :price, step: 1, min: 0, class: "field", placeholder: "Price" %>
+      <%= form.number_field :stock_quantity, min: 0, class: "field", placeholder: "Stock quantity" %>
+      <%= form.collection_select :category_id, Category.ordered, :id, :name, { prompt: "Choose category" }, class: "field" %>
+      <%= form.select :product_kind, Product.product_kinds.keys.map { |kind| [kind.humanize, kind] }, {}, class: "field" %>
+    </div>
+
+    <div class="checkbox-row">
+      <label class="checkbox"><%= form.check_box :featured %> Featured</label>
+      <label class="checkbox"><%= form.check_box :active %> Active storefront item</label>
+      <label class="checkbox"><%= form.check_box :organic %> Organic</label>
+      <label class="checkbox"><%= form.check_box :local %> Local</label>
+      <label class="checkbox"><%= form.check_box :seasonal %> Seasonal</label>
+    </div>
+
+    <div class="admin-action-row">
+      <%= form.submit submit_label, class: "button button--primary" %>
+      <%= link_to "Back to products", admin_products_path, class: "button button--ghost" %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: Test Promotion One
+  slug: test-promotion-one
+  description: Promotion fixture one.
+  discount_kind: 1
+  discount_value: 9.99
+  promo_code: TESTPROMO1
+  starts_on: 2026-04-10
+  ends_on: 2026-04-10
+  active: false
+  featured: false
+
+two:
+  title: Test Promotion Two
+  slug: test-promotion-two
+  description: Promotion fixture two.
+  discount_kind: 1
+  discount_value: 9.99
+  promo_code: TESTPROMO2
+  starts_on: 2026-04-10
+  ends_on: 2026-04-10
+  active: false
+  featured: false

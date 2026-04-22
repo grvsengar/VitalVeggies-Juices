@@ -1,0 +1,50 @@
+<% content_for :title, "Manager Products" %>
+
+<section class="manager-page">
+  <div class="manager-page__header">
+    <div>
+      <h1>Products</h1>
+      <p><%= Date.current.strftime("%A %d %B, %Y") %></p>
+    </div>
+    <div class="manager-action-row">
+      <%= link_to "+ Add product", new_manager_product_path, class: "manager-primary-action" %>
+      <%= link_to "Update stock", manager_inventory_index_path, class: "manager-secondary-action" %>
+    </div>
+  </div>
+
+  <%= form_with url: manager_products_path, method: :get, class: "manager-toolbar" do |form| %>
+    <%= form.search_field :q, value: params[:q], placeholder: "Search products...", class: "manager-search" %>
+    <%= form.collection_select :category_id, @categories, :id, :name, { include_blank: "All categories", selected: params[:category_id] }, class: "manager-select" %>
+    <%= form.select :kind, Product.product_kinds.keys.map { |kind| [kind.humanize, kind] }, { include_blank: "All types", selected: params[:kind] }, class: "manager-select" %>
+    <%= form.select :status, [["All status", ""], ["Active", "active"], ["Hidden", "hidden"]], { selected: params[:status] }, class: "manager-select" %>
+    <%= form.submit "Filter", class: "manager-primary-action" %>
+  <% end %>
+
+  <article class="manager-card">
+    <div class="manager-table manager-table--products">
+      <div class="manager-table__head">
+        <span>Product</span>
+        <span>SKU</span>
+        <span>Category</span>
+        <span>Price</span>
+        <span>Stock</span>
+        <span>Status</span>
+      </div>
+      <% @products.each do |product| %>
+        <%= link_to edit_manager_inventory_path(product), class: "manager-table__row" do %>
+          <span class="manager-product-cell">
+            <%= image_tag product_image_path(product), alt: product.name %>
+            <strong><%= product.name %></strong>
+          </span>
+          <span><%= product.sku %></span>
+          <span><%= product.category.name %></span>
+          <span><%= money(product.price) %></span>
+          <span><%= product.stock_quantity %></span>
+          <span class="<%= product.active? ? 'manager-pill manager-pill--ok' : 'manager-pill manager-pill--danger' %>">
+            <%= product.active? ? "Active" : "Hidden" %>
+          </span>
+        <% end %>
+      <% end %>
+    </div>
+  </article>
+</section>

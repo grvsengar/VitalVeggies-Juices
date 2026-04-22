@@ -1,0 +1,36 @@
+<% content_for :title, "Manager Categories" %>
+
+<section class="manager-page">
+  <div class="manager-page__header">
+    <div>
+      <h1>Categories</h1>
+      <p><%= Date.current.strftime("%A %d %B, %Y") %></p>
+    </div>
+    <%= link_to "View products", manager_products_path, class: "manager-primary-action" %>
+  </div>
+
+  <div class="manager-category-grid">
+    <% @categories.each do |category| %>
+      <% active_count = category.products.count(&:active?) %>
+      <article class="manager-category-card">
+        <div class="manager-category-card__media">
+          <%= image_tag category_image_path(category), alt: category.name %>
+        </div>
+        <div>
+          <h2><%= category.name %></h2>
+          <p><%= pluralize(category.products.size, "product") %> · <%= pluralize(active_count, "active item") %></p>
+        </div>
+
+        <div class="manager-category-card__footer">
+          <span class="<%= category.active? ? 'manager-pill manager-pill--ok' : 'manager-pill manager-pill--danger' %>">
+            <%= category.active? ? "Active" : "Hidden" %>
+          </span>
+          <div class="manager-category-card__actions">
+            <%= link_to "Products", manager_products_path(category_id: category.id), class: "manager-mini-button" %>
+            <%= link_to "Stock", manager_inventory_index_path(category_id: category.id), class: "manager-mini-button" %>
+          </div>
+        </div>
+      </article>
+    <% end %>
+  </div>
+</section>

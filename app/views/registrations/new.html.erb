@@ -1,0 +1,93 @@
+<% content_for :title, "Join Us" %>
+
+<div class="auth-layout">
+  <aside class="auth-layout__sidebar">
+    <div class="auth-layout__brand">
+      <div class="brand-badge">VV</div>
+      <span class="brand-text"><%= business_details[:name] %></span>
+    </div>
+    
+    <div class="auth-layout__hero">
+      <p class="eyebrow">Join the community</p>
+      <h1>Start your <em>fresh journey</em></h1>
+      <p class="hero-text">Handpicked vegetables, cold-pressed juices and seasonal fruits — straight from local farms to your kitchen.</p>
+      
+      <ul class="auth-features">
+        <li><span>🌱</span> 100% organic produce</li>
+        <li><span>🚚</span> Same-day delivery</li>
+        <li><span>❄️</span> Cold-chain guaranteed</li>
+      </ul>
+    </div>
+    
+    <div class="auth-testimonial">
+      <p>"<%= business_details[:name] %> changed how I eat. Everything is so crisp and vibrant — you can truly taste the difference."</p>
+      <div class="auth-testimonial__footer">
+        <div class="avatar">GS</div>
+        <div>
+          <strong>Gaurav Sengar</strong>
+          <span>Loyal customer since 2023</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="auth-layout__main">
+    <div class="auth-form-container auth-form-container--compact">
+      <div class="auth-tabs">
+        <%= link_to "Sign in", login_path, class: "auth-tab" %>
+        <%= link_to "Create account", signup_path, class: "auth-tab auth-tab--active" %>
+      </div>
+
+      <div class="auth-form-box">
+        <h2>Join <%= business_details[:name] %> 🌱</h2>
+        <p class="form-intro">Create your account and start shopping fresh.</p>
+
+        <%= form_with model: @user, url: signup_path, local: true, class: "stack-form" do |f| %>
+          <% if @user.errors.any? %>
+            <div class="flash flash--alert">
+              <p>Please fix the following:</p>
+              <ul>
+                <% @user.errors.full_messages.each do |msg| %>
+                  <li><%= msg %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="field-group">
+            <%= f.label :name, "Full name", class: "field-label" %>
+            <%= f.text_field :name, class: "field", placeholder: "Priya Sharma", required: true %>
+          </div>
+
+          <div class="field-group">
+            <%= f.label :email, "Email address", class: "field-label" %>
+            <%= f.email_field :email, class: "field", placeholder: "you@example.com", required: true %>
+          </div>
+
+          <div class="field-group">
+            <%= f.label :password, "Password", class: "field-label" %>
+            <%= f.password_field :password, class: "field", placeholder: "Min. 8 characters", required: true %>
+          </div>
+
+          <div class="field-group">
+            <%= f.label :password_confirmation, "Confirm password", class: "field-label" %>
+            <%= f.password_field :password_confirmation, class: "field", placeholder: "Repeat password", required: true %>
+          </div>
+
+          <button type="submit" class="button button--primary button--full">
+            Create my account 🥦
+          </button>
+        <% end %>
+
+        <p class="auth-note">
+          By creating an account you agree to our 
+          <%= link_to "Terms", terms_and_conditions_path %> and <%= link_to "Privacy", privacy_policy_path %>.
+        </p>
+
+        <div class="auth-switch">
+          Already have an account? <%= link_to "Sign in", login_path %>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

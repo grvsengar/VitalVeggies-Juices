@@ -1,0 +1,280 @@
+<% content_for :title, "Fresh Produce Delivered Across Bengaluru" %>
+<% content_for :meta_description, "Order fresh juices, Indian fruit baskets, vegetable packs, and seasonal combos across Bengaluru neighborhoods like Indiranagar, Domlur, and Koramangala." %>
+
+<section class="hero hero--immersive hero--market-pulse">
+  <div class="container hero-showcase hero-showcase--refined hero-showcase--market-pulse">
+    <div class="hero-showcase__copy hero-showcase__copy--refined hero-showcase__copy--market-pulse">
+      <div class="hero-kicker">
+        <p class="eyebrow">Fresh produce market</p>
+        <span>Live Bengaluru stock</span>
+      </div>
+      <h1>Farm-picked produce, fruit boxes, and juices with a <span>fresh market feel.</span></h1>
+      <p class="hero__copy">Vital Veggies & Juices brings fresh inventory, clear stock signals, and same-day Bengaluru delivery into one calmer shopping experience.</p>
+
+      <div class="hero-freshness-flow">
+        <article>
+          <strong>01</strong>
+          <span>Morning pick</span>
+        </article>
+        <article>
+          <strong>02</strong>
+          <span>Clean packing</span>
+        </article>
+        <article>
+          <strong>03</strong>
+          <span>Same-day route</span>
+        </article>
+      </div>
+
+      <div class="hero__actions hero__actions--refined">
+        <%= link_to "Shop Collection", products_path, class: "button button--primary" %>
+        <%= link_to "Explore Seasonal Picks", products_path(sort: "stock"), class: "button button--ghost" %>
+      </div>
+
+      <div class="hero-market-ticket">
+        <div class="hero-market-ticket__stamp">Today</div>
+        <article>
+          <span>Dispatch</span>
+          <strong>03 hr</strong>
+        </article>
+        <article>
+          <span>In stock</span>
+          <strong><%= Product.active.where("stock_quantity > 0").count %></strong>
+        </article>
+        <article>
+          <span>Featured</span>
+          <strong><%= @featured_products.count %>+</strong>
+        </article>
+        <article>
+          <span>Categories</span>
+          <strong><%= @categories.count %></strong>
+        </article>
+      </div>
+    </div>
+
+    <div class="hero-showcase__card hero-showcase__card--photo hero-showcase__card--market-pulse">
+      <img src="<%= site_image_path(:home_hero) %>" alt="Fresh vegetable assortment from the market">
+      <div class="hero-freshness-tags">
+        <span>Morning harvest</span>
+        <span>Cold-chain packed</span>
+      </div>
+      <div class="promo-disc">Fresh<span>today</span></div>
+      <div class="hero-showcase__overlay hero-showcase__overlay--photo">
+        <p class="eyebrow">Market spotlight</p>
+        <h2>Real produce. Stronger visual trust.</h2>
+        <p>We replaced flat placeholder graphics with real photography so the homepage feels grounded, premium, and credible.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--soft">
+  <div class="container">
+    <div class="section-heading section-heading--stacked">
+      <div>
+        <p class="eyebrow">Categories</p>
+        <h2>Shop by what belongs in the basket right now</h2>
+        <p>Each card now uses cleaner sizing, calmer surfaces, and stronger contrast so the catalog is easier to scan.</p>
+      </div>
+      <%= link_to "Browse full catalog", products_path, class: "text-link" %>
+    </div>
+
+    <div class="menu-grid menu-grid--refined">
+      <% @categories.each do |category| %>
+        <article class="menu-card menu-card--refined">
+          <img src="<%= category_image_path(category) %>" alt="<%= category.name %>">
+          <div class="menu-card__content">
+            <p class="eyebrow"><%= category.name %></p>
+            <h3><%= category.description %></h3>
+            <%= link_to "Browse now", products_path(category: category.id), class: "button button--ghost button--small" %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<section class="section section--surface">
+  <div class="container split-grid split-grid--feature-banner">
+    <div class="story-card story-card--editorial">
+      <p class="eyebrow">Design direction</p>
+      <h2>Better rhythm, stronger typography, and more disciplined containers.</h2>
+      <p>The storefront now uses a warmer produce-inspired palette, larger radii, deliberate card spacing, and a cleaner hierarchy between promotional content and shopping actions.</p>
+      <div class="story-card__actions">
+        <%= link_to "See all products", products_path, class: "button button--primary" %>
+      </div>
+    </div>
+
+    <div class="featured-visual featured-visual--produce">
+      <img src="<%= site_image_path(:home_feature) %>" alt="Fresh mixed vegetables">
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading section-heading--stacked">
+      <div>
+        <p class="eyebrow">Featured products</p>
+        <h2>Best sellers with real stock visibility</h2>
+        <p>Product cards stay easy to compare while still feeling premium and tactile.</p>
+      </div>
+    </div>
+
+    <div class="product-grid">
+      <%= render partial: "shared/product_card", collection: @featured_products, as: :product %>
+    </div>
+  </div>
+</section>
+
+<% if @featured_promotions.any? %>
+  <section class="section section--soft">
+    <div class="container offer-grid offer-grid--refined">
+      <% @featured_promotions.each do |promotion| %>
+        <article class="offer-card offer-card--highlight offer-card--produce">
+          <p class="eyebrow">Special offer</p>
+          <h3><%= promotion.title %></h3>
+          <p><%= promotion.description %></p>
+          <strong>Use code <%= promotion.promo_code %></strong>
+        </article>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<% if @seasonal_products.any? %>
+  <section class="section">
+    <div class="container">
+      <div class="section-heading section-heading--stacked">
+        <div>
+          <p class="eyebrow">Seasonal lineup</p>
+          <h2>Quick picks for customers buying this week</h2>
+        </div>
+      </div>
+
+      <div class="product-grid product-grid--four">
+        <%= render partial: "shared/product_card", collection: @seasonal_products, as: :product %>
+      </div>
+    </div>
+  </section>
+<% end %>
+
+<section class="section section--light">
+  <div class="container">
+    <div class="section-heading section-heading--centered">
+      <p class="eyebrow">Journal</p>
+      <h2>Fresh ideas, recipes, and weekly produce thinking</h2>
+      <p>Replacing placeholder posts with real article data gives the home page more credibility and better content depth.</p>
+    </div>
+
+    <div class="blog-grid-modern blog-grid-modern--refined">
+      <% @articles.each_with_index do |article, index| %>
+        <article class="article-card article-card--compact article-card--editorial">
+          <div class="article-card__media article-card__media--photo">
+            <img src="<%= article_image_path(article, index: index) %>" alt="<%= article.title %>">
+          </div>
+          <div class="article-card__body">
+            <p class="article-card__meta"><%= article.published_on.strftime("%b %d, %Y") %></p>
+            <h3><%= article.title %></h3>
+            <p><%= article.excerpt %></p>
+            <div class="article-card__actions">
+              <%= link_to "Read article", article_path(article.slug), class: "button button--ghost button--small" %>
+            </div>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<section class="section section--soft">
+  <div class="container split-grid split-grid--contact">
+    <div>
+      <div class="section-heading section-heading--stacked">
+        <div>
+          <p class="eyebrow">Customer reviews</p>
+          <h2>Trusted by repeat families and office teams</h2>
+        </div>
+      </div>
+
+      <div class="testimonial-list testimonial-list--refined">
+        <% @testimonials.each do |testimonial| %>
+          <article class="testimonial-card testimonial-card--refined">
+            <strong><%= stars_for(testimonial.rating) %></strong>
+            <p><%= testimonial.quote %></p>
+            <h3><%= testimonial.customer_name %></h3>
+            <span><%= testimonial.role %></span>
+          </article>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="contact-highlight contact-highlight--refined">
+      <div class="contact-highlight__badge">Call<span>today</span></div>
+      <p class="eyebrow">Contact</p>
+      <h2>Need delivery help or a custom produce order?</h2>
+      <p><strong>Phone:</strong> <%= business_details[:phone] %></p>
+      <p><strong>Email:</strong> <%= mail_to business_details[:email] %></p>
+      <p><strong>Office:</strong> <%= business_details[:address] %></p>
+      <%= link_to "Contact us", contact_path, class: "button button--primary" %>
+    </div>
+  </div>
+</section>
+
+<section class="section section--light">
+  <div class="container">
+    <div class="section-heading section-heading--stacked">
+      <div>
+        <p class="eyebrow">Bengaluru coverage</p>
+        <h2>Location pages built for neighborhood search intent</h2>
+        <p>Each area page pairs local delivery copy with real products so search traffic lands on useful content, not thin placeholder pages.</p>
+      </div>
+      <%= link_to "View delivery coverage", delivery_path, class: "text-link" %>
+    </div>
+
+    <div class="coverage-grid">
+      <% service_areas.each do |area| %>
+        <article class="coverage-card">
+          <p class="eyebrow"><%= area.name %></p>
+          <h3><%= area.hero_title %></h3>
+          <p><%= area.intro %></p>
+          <%= link_to "Explore #{area.name}", location_page_path(area.slug), class: "text-link" %>
+        </article>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container newsletter-band newsletter-band--refined">
+    <div>
+      <p class="eyebrow">Newsletter</p>
+      <h2>Keep up with weekly offers and fresh arrivals</h2>
+      <p>One compact signup surface with better spacing, better contrast, and a calmer visual weight.</p>
+    </div>
+    <%= form_with model: NewsletterSignup.new, url: newsletter_signups_path, class: "newsletter-form newsletter-form--inline" do |form| %>
+      <%= form.email_field :email, placeholder: "Enter a valid email address", class: "field" %>
+      <%= form.submit "Subscribe", class: "button button--primary" %>
+    <% end %>
+  </div>
+</section>
+
+<section class="section section--soft">
+  <div class="container">
+    <div class="section-heading section-heading--stacked">
+      <div>
+        <p class="eyebrow">FAQs</p>
+        <h2>Quick answers before checkout</h2>
+      </div>
+    </div>
+
+    <div class="faq-list faq-list--grid">
+      <% @faqs.each do |faq| %>
+        <article class="faq-card faq-card--refined">
+          <h3><%= faq.question %></h3>
+          <p><%= faq.answer %></p>
+        </article>
+      <% end %>
+    </div>
+  </div>
+</section>

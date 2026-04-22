@@ -1,0 +1,37 @@
+<% content_for :title, "Order #{@order.order_number}" %>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">Order confirmation</p>
+    <h1><%= @order.order_number %></h1>
+    <p>Status: <strong><%= @order.status.humanize %></strong> | Tracking token: <strong><%= @order.tracking_token %></strong></p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split-grid">
+    <div class="summary-card">
+      <h2>Delivery details</h2>
+      <p><strong><%= @order.customer_name %></strong></p>
+      <p><%= @order.full_address %></p>
+      <p><%= @order.phone %></p>
+      <p><%= @order.email %></p>
+      <p><strong>Payment:</strong> <%= @order.payment_method.humanize %> / <%= @order.payment_status.humanize %></p>
+      <p><strong>Delivery window:</strong> <%= @order.delivery_window.presence || "Assigned after confirmation" %></p>
+    </div>
+
+    <div class="summary-card">
+      <h2>Items ordered</h2>
+      <% @order.order_items.each do |item| %>
+        <div class="summary-row">
+          <span><%= item.product_name %> x <%= item.quantity %></span>
+          <strong><%= money(item.line_total) %></strong>
+        </div>
+      <% end %>
+      <div class="summary-row"><span>Subtotal</span><strong><%= money(@order.subtotal) %></strong></div>
+      <div class="summary-row"><span>Discount</span><strong>-<%= money(@order.discount_total) %></strong></div>
+      <div class="summary-row"><span>Delivery</span><strong><%= money(@order.delivery_fee) %></strong></div>
+      <div class="summary-row summary-row--total"><span>Total</span><strong><%= money(@order.total) %></strong></div>
+    </div>
+  </div>
+</section>

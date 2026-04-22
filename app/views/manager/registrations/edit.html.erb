@@ -1,0 +1,31 @@
+<% content_for :title, "Manager Registration" %>
+
+<section class="portal-auth">
+  <div class="container portal-auth__grid">
+    <div class="portal-auth__intro">
+      <p class="eyebrow">Manager registration</p>
+      <h1>Complete your portal setup</h1>
+      <p>This invite was sent to <strong><%= @manager.email %></strong>. Set your name and password to activate manager access.</p>
+    </div>
+
+    <div class="form-card">
+      <h2>Register manager account</h2>
+      <%= form_with model: @manager, url: manager_register_path(params[:token]), method: :patch, class: "stack-form" do |form| %>
+        <% if @manager.errors.any? %>
+          <div class="flash flash--alert">
+            <p>Please fix the following:</p>
+            <ul>
+              <% @manager.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+        <%= form.text_field :name, class: "field", placeholder: "Full name" %>
+        <%= form.password_field :password, class: "field", placeholder: "Create password" %>
+        <%= form.password_field :password_confirmation, class: "field", placeholder: "Confirm password" %>
+        <%= form.submit "Complete registration", class: "button button--primary button--full" %>
+      <% end %>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,42 @@
+<% content_for :title, "Login" %>
+
+<section class="auth-page">
+  <div class="auth-shell">
+    <div class="auth-panel auth-panel--brand">
+      <div class="auth-brandmark">Vital</div>
+
+      <div class="auth-copy">
+        <h1 class="auth-title">Choose your</h1>
+        <p class="auth-kicker">CONTROL CENTER</p>
+        <p class="auth-subtitle">Separate access for business control and daily operations.</p>
+      </div>
+
+      <div class="auth-botanical" aria-hidden="true"></div>
+    </div>
+
+    <div class="auth-panel auth-panel--form">
+      <div class="auth-form-wrap">
+        <p class="auth-form-title">PORTALS</p>
+        <p class="auth-form-subtitle">Pick the right access level</p>
+
+        <div class="portal-selector">
+          <article class="portal-selector__card">
+            <h2>Admin Portal</h2>
+            <p>Catalog, pricing, promotions, orders, and business reporting.</p>
+            <%= link_to "Open Admin Login", admin_login_path, class: "auth-submit portal-selector__button" %>
+          </article>
+          <article class="portal-selector__card">
+            <h2>Manager Portal</h2>
+            <p>Inventory updates, low-stock response, and order fulfilment status.</p>
+            <%= link_to "Open Manager Login", manager_login_path, class: "auth-submit portal-selector__button" %>
+          </article>
+          <article class="portal-selector__card">
+            <h2>Buyer Account</h2>
+            <p>Use one buyer login to review account details and orders linked to the same email.</p>
+            <%= link_to "Open Buyer Login", buyer_login_path, class: "auth-submit portal-selector__button" %>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

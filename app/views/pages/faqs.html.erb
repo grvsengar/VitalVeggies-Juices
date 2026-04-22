@@ -1,0 +1,22 @@
+<% content_for :title, "FAQs" %>
+
+<section class="page-hero page-hero--editorial">
+  <div class="container narrow">
+    <p class="eyebrow">FAQs</p>
+    <h1>Frequently asked questions</h1>
+    <p>Clear answers on delivery, product quality, availability, and ordering.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow">
+    <div class="faq-list">
+      <% @faqs.each do |faq| %>
+        <article class="faq-card faq-card--refined">
+          <h2><%= faq.question %></h2>
+          <p><%= faq.answer %></p>
+        </article>
+      <% end %>
+    </div>
+  </div>
+</section>

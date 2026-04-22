@@ -1,0 +1,25 @@
+<% content_for :title, "Admin Login" %>
+
+<section class="portal-auth">
+  <div class="container portal-auth__grid">
+    <div class="portal-auth__intro">
+      <p class="eyebrow">Admin portal</p>
+      <h1>Business control and manager creation</h1>
+      <ul class="portal-list">
+        <% role_responsibilities(:admin).each do |responsibility| %>
+          <li><%= responsibility %></li>
+        <% end %>
+      </ul>
+      <p class="portal-auth__hint">Default seed credential: <strong>admin@vitalveggies.in</strong> / <strong>Admin@12345</strong></p>
+    </div>
+
+    <div class="form-card">
+      <h2>Sign in as admin</h2>
+      <%= form_with url: admin_login_path, class: "stack-form" do |form| %>
+        <%= form.email_field :email, class: "field", placeholder: "Admin email" %>
+        <%= form.password_field :password, class: "field", placeholder: "Password" %>
+        <%= form.submit "Enter Admin Portal", class: "button button--primary button--full" %>
+      <% end %>
+    </div>
+  </div>
+</section>

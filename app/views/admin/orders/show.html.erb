@@ -1,0 +1,31 @@
+<% content_for :title, @order.order_number %>
+
+<section class="section">
+  <div class="container split-grid">
+    <div class="summary-card">
+      <h2><%= @order.order_number %></h2>
+      <p><strong>Customer:</strong> <%= @order.customer_name %></p>
+      <p><strong>Email:</strong> <%= @order.email %></p>
+      <p><strong>Delivery:</strong> <%= @order.full_address %></p>
+      <p><strong>Total:</strong> <%= money(@order.total) %></p>
+      <div class="portal-table">
+        <% @order.order_items.each do |item| %>
+          <div class="portal-table__row">
+            <span><%= item.product_name %> x <%= item.quantity %></span>
+            <strong><%= money(item.line_total) %></strong>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h2>Update order</h2>
+      <%= form_with model: [:admin, @order], class: "stack-form" do |form| %>
+        <%= form.select :status, Order.statuses.keys.map { |status| [status.humanize, status] }, {}, class: "field" %>
+        <%= form.select :payment_status, [["Pending", "pending"], ["Paid", "paid"], ["Failed", "failed"]], {}, class: "field" %>
+        <%= form.text_field :delivery_window, class: "field", placeholder: "Delivery window" %>
+        <%= form.submit "Save order", class: "button button--primary" %>
+      <% end %>
+    </div>
+  </div>
+</section>

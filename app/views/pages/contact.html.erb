@@ -1,0 +1,34 @@
+<% content_for :title, "Contact" %>
+
+<section class="page-hero page-hero--editorial">
+  <div class="container">
+    <p class="eyebrow">Contact us</p>
+    <h1>Visit, call, or message us</h1>
+    <p>Use this section for customer support, corporate pantry orders, or delivery questions.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="contact-page-card editorial-panel">
+      <div class="contact-page-grid">
+        <div class="summary-card editorial-panel">
+          <h2>Reach us directly</h2>
+          <p><strong>Email:</strong> <%= mail_to business_details[:email] %></p>
+          <p><strong>Phone:</strong> <%= business_details[:phone] %></p>
+          <p><strong>Address:</strong> <%= business_details[:address] %></p>
+          <p><strong>Hours:</strong> <%= business_details[:hours] %></p>
+        </div>
+
+        <div class="summary-card editorial-panel">
+          <h2>Stay updated</h2>
+          <p>Share offers, delivery updates, and seasonal availability through a clean subscription module.</p>
+          <%= form_with model: NewsletterSignup.new, url: newsletter_signups_path, class: "newsletter-form" do |form| %>
+            <%= form.email_field :email, placeholder: "Enter a valid email address", class: "field" %>
+            <%= form.submit "Submit", class: "button button--primary" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

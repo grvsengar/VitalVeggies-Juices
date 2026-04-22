@@ -1,0 +1,9 @@
+<%= turbo_stream.replace "cart-link" do %>
+  <%= link_to "Cart (#{current_cart.count})", cart_path, class: "button button--primary", id: "cart-link" %>
+<% end %>
+
+<%= turbo_stream.update "flash" do %>
+  <% flash.each do |type, message| %>
+    <div class="flash flash--<%= type %>"><%= message %></div>
+  <% end %>
+<% end %>

@@ -1,0 +1,83 @@
+<% content_for :title, "Recipes & Health Tips" %>
+
+<section class="recipe-blog-page">
+  <div class="container recipe-blog-shell">
+    <section class="recipe-blog-hero">
+      <% if @featured_article %>
+        <article class="recipe-feature">
+          <div class="recipe-feature__image">
+            <%= link_to article_path(@featured_article.slug), aria: { label: "Read #{@featured_article.title}" } do %>
+              <img src="<%= article_image_path(@featured_article, featured: true) %>" alt="<%= @featured_article.title %>">
+              <span class="recipe-play-button" aria-hidden="true">&#9654;</span>
+            <% end %>
+          </div>
+          <div class="recipe-feature__body">
+            <h2><%= link_to @featured_article.title, article_path(@featured_article.slug) %></h2>
+            <div class="recipe-meta-row">
+              <span class="recipe-stars">★★★★<span class="recipe-stars__muted">★</span></span>
+              <span class="recipe-rating">4.0</span>
+              <span class="recipe-divider">|</span>
+              <span><%= pluralize(@featured_article.body.to_s.split("\n\n").size, "section") %></span>
+              <span class="recipe-divider">|</span>
+              <span>Last updated on <%= @featured_article.published_on.strftime("%B %d, %Y") %></span>
+            </div>
+            <p><%= @featured_article.excerpt %></p>
+            <div class="recipe-tags">
+              <span class="recipe-tag recipe-tag--green">Fresh Produce</span>
+              <span class="recipe-tag recipe-tag--green">Healthy Kitchen</span>
+              <span class="recipe-tag">Seasonal Tips</span>
+              <span class="recipe-tag">Quick Read</span>
+              <span class="recipe-tag"><%= pluralize(@featured_article.body.to_s.split("\n\n").size, "step") %></span>
+            </div>
+          </div>
+        </article>
+      <% end %>
+
+      <div class="recipe-mini-grid">
+        <% @hero_grid_articles.each_with_index do |article, index| %>
+          <article class="recipe-mini-card">
+            <div class="recipe-mini-card__image">
+              <%= link_to article_path(article.slug), aria: { label: "Read #{article.title}" } do %>
+                <img src="<%= article_image_path(article, index: index) %>" alt="<%= article.title %>">
+                <span class="recipe-play-button recipe-play-button--small" aria-hidden="true">&#9654;</span>
+              <% end %>
+            </div>
+            <div class="recipe-mini-card__body">
+              <h3><%= link_to article.title, article_path(article.slug) %></h3>
+              <div class="recipe-mini-card__meta">
+                <span class="recipe-stars">★★★★<span class="recipe-stars__muted">★</span></span>
+                <span class="recipe-rating">4.0</span>
+                <span class="recipe-divider">|</span>
+                <span><%= article.published_on.strftime("%b %d, %Y") %></span>
+              </div>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="recipe-favorites">
+      <h2 class="recipe-section-title">Reader Favorite Recipe</h2>
+      <div class="recipe-favorites-grid">
+        <% @favorite_articles.each_with_index do |article, index| %>
+          <article class="recipe-favorite-card">
+            <div class="recipe-favorite-card__image">
+              <%= link_to article_path(article.slug), aria: { label: "Read #{article.title}" } do %>
+                <img src="<%= article_image_path(article, index: index + 1) %>" alt="<%= article.title %>">
+              <% end %>
+            </div>
+            <div class="recipe-favorite-card__body">
+              <h3><%= link_to article.title, article_path(article.slug) %></h3>
+              <div class="recipe-mini-card__meta">
+                <span class="recipe-stars">★★★★<span class="recipe-stars__muted">★</span></span>
+                <span class="recipe-rating">4.0</span>
+                <span class="recipe-divider">|</span>
+                <span><%= article.published_on.strftime("%b %d, %Y") %></span>
+              </div>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    </section>
+  </div>
+</section>

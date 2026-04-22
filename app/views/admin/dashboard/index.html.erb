@@ -1,0 +1,73 @@
+<% content_for :title, "Admin Dashboard" %>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Admin dashboard</p>
+        <h2>Business control overview</h2>
+      </div>
+    </div>
+
+    <div class="portal-metrics">
+      <article class="summary-card"><h3><%= @metrics[:products] %></h3><p>Total products</p></article>
+      <article class="summary-card"><h3><%= @metrics[:active_orders] %></h3><p>Active orders</p></article>
+      <article class="summary-card"><h3><%= @metrics[:low_stock] %></h3><p>Low-stock items</p></article>
+      <article class="summary-card"><h3><%= money(@metrics[:revenue]) %></h3><p>Delivered revenue</p></article>
+    </div>
+
+    <div class="portal-content-grid">
+      <div class="summary-card">
+        <h2>Access responsibility</h2>
+        <ul class="portal-list">
+          <% current_user.responsibilities.each do |responsibility| %>
+            <li><%= responsibility %></li>
+          <% end %>
+        </ul>
+        <p><%= link_to "Create or review managers", admin_managers_path, class: "text-link" %></p>
+      </div>
+
+      <div class="summary-card">
+        <h2>Low stock watchlist</h2>
+        <div class="portal-table">
+          <% @low_stock_products.each do |product| %>
+            <div class="portal-table__row">
+              <span><%= product.name %></span>
+              <strong><%= product.stock_quantity %> left</strong>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="section-heading">
+        <div><h2>Recent manager invitations</h2></div>
+        <%= link_to "Open manager access", admin_managers_path, class: "text-link" %>
+      </div>
+      <div class="portal-table">
+        <% @recent_managers.each do |manager| %>
+          <div class="portal-table__row">
+            <span><%= manager.email %></span>
+            <span><%= manager.registered? ? "Registered" : "Invitation pending" %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="section-heading">
+        <div><h2>Recent orders</h2></div>
+        <%= link_to "Manage orders", admin_orders_path, class: "text-link" %>
+      </div>
+      <div class="portal-table">
+        <% @recent_orders.each do |order| %>
+          <div class="portal-table__row">
+            <span><%= link_to order.order_number, admin_order_path(order) %> · <%= order.customer_name %></span>
+            <span><%= order.status.humanize %> · <%= money(order.total) %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>

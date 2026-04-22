@@ -1,0 +1,75 @@
+<% content_for :title, "Sign In" %>
+
+<div class="auth-layout">
+  <aside class="auth-layout__sidebar">
+    <div class="auth-layout__brand">
+      <div class="brand-badge">VV</div>
+      <span class="brand-text"><%= business_details[:name] %></span>
+    </div>
+    
+    <div class="auth-layout__hero">
+      <p class="eyebrow">Farm to your doorstep</p>
+      <h1>Nature's best, <em>delivered fresh</em></h1>
+      <p class="hero-text">Handpicked vegetables, cold-pressed juices and seasonal fruits — straight from local farms to your kitchen.</p>
+      
+      <ul class="auth-features">
+        <li><span>🌱</span> 100% organic produce</li>
+        <li><span>🚚</span> Same-day delivery</li>
+        <li><span>❄️</span> Cold-chain guaranteed</li>
+      </ul>
+    </div>
+    
+    <div class="auth-testimonial">
+      <p>"<%= business_details[:name] %> changed how I eat. Everything is so crisp and vibrant — you can truly taste the difference."</p>
+      <div class="auth-testimonial__footer">
+        <div class="avatar">GS</div>
+        <div>
+          <strong>Gaurav Sengar</strong>
+          <span>Loyal customer since 2023</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="auth-layout__main">
+    <div class="auth-form-container auth-form-container--compact">
+      <div class="auth-tabs">
+        <%= link_to "Sign in", login_path, class: "auth-tab auth-tab--active" %>
+        <%= link_to "Create account", signup_path, class: "auth-tab" %>
+      </div>
+
+      <div class="auth-form-box">
+        <h2>Welcome back 👋</h2>
+        <p class="form-intro">Sign in to continue to your fresh market.</p>
+
+        <%= form_with url: login_path, local: true, class: "stack-form" do |f| %>
+          <div class="field-group">
+            <%= f.label :email, "Email address", class: "field-label" %>
+            <%= f.email_field :email, class: "field", placeholder: "you@example.com", required: true %>
+          </div>
+
+          <div class="field-group">
+            <div class="flex-row">
+              <%= f.label :password, "Password", class: "field-label" %>
+              <%= link_to "Forgot password?", "#", class: "form-link" %>
+            </div>
+            <%= f.password_field :password, class: "field", placeholder: "Your password", required: true %>
+          </div>
+
+          <button type="submit" class="button button--primary button--full">
+            Sign in to <%= business_details[:name] %> 🌿
+          </button>
+        <% end %>
+
+        <div class="auth-switch">
+          Don't have an account? <%= link_to "Create account", signup_path %>
+        </div>
+
+        <div class="auth-trust">
+          <span>🔒 Secure checkout</span>
+          <span>⚡ Fast delivery</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

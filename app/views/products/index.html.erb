@@ -1,0 +1,60 @@
+<% content_for :title, "Shop Fresh Produce" %>
+
+<section class="page-hero page-hero--catalog">
+  <div class="container">
+    <p class="eyebrow">Catalog</p>
+    <h1>Fresh juices, fruit boxes, and produce staples in one view</h1>
+    <p>Browse juices, fruits, vegetables, and combo offers with live stock labels and a cleaner, editorial catalog layout that now matches the rest of the site.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="filter-bar editorial-panel">
+      <%= form_with url: products_path, method: :get, class: "filter-bar__form" do |form| %>
+        <div class="filter-group">
+          <%= form.text_field :q, value: params[:q], placeholder: "Search products", class: "field field--compact" %>
+        </div>
+        <div class="filter-group">
+          <%= form.select :category, options_from_collection_for_select(@categories, :id, :name, params[:category]), { include_blank: "All categories" }, class: "field field--compact" %>
+        </div>
+        <div class="filter-group">
+          <%= form.select :kind, options_for_select(Product.product_kinds.keys.map { |kind| [kind.humanize, kind] }, params[:kind]), { include_blank: "All types" }, class: "field field--compact" %>
+        </div>
+        <div class="filter-group">
+          <%= form.select :availability, options_for_select([["Show all", nil], ["In stock only", "in_stock"]], params[:availability]), {}, class: "field field--compact" %>
+        </div>
+        <div class="filter-group filter-group--checkbox">
+          <label class="checkbox">
+            <%= form.check_box :organic, { checked: params[:organic].present? }, "1", nil %>
+            Organic
+          </label>
+        </div>
+        <div class="filter-actions filter-actions--compact">
+          <%= form.submit "Filter", class: "button button--primary button--compact", name: nil %>
+          <%= link_to "Reset", products_path, class: "button button--ghost button--compact" %>
+        </div>
+      <% end %>
+    </div>
+
+    <div>
+      <div class="section-heading">
+        <div>
+          <h2><%= pluralize(@products.count, "product") %> available</h2>
+          <p><%= @available_products_count %> live items currently available across the store.</p>
+        </div>
+      </div>
+      <% if @products.any? %>
+        <div class="product-grid">
+          <%= render partial: "shared/product_card", collection: @products, as: :product %>
+        </div>
+      <% else %>
+        <div class="empty-state editorial-panel">
+          <h3>No products matched your filters</h3>
+          <p>Try removing one filter or browse all products.</p>
+          <%= link_to "View all products", products_path, class: "button button--primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>

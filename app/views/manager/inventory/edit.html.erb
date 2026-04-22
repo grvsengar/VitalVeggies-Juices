@@ -1,0 +1,14 @@
+<% content_for :title, "Update Inventory" %>
+
+<section class="section">
+  <div class="container narrow">
+    <div class="form-card">
+      <h2>Update <%= @product.name %></h2>
+      <%= form_with model: @product, url: manager_inventory_path(@product), class: "stack-form", method: :patch do |form| %>
+        <%= form.number_field :stock_quantity, min: 0, class: "field", placeholder: "Stock quantity" %>
+        <label class="checkbox"><%= form.check_box :active %> Product active</label>
+        <%= form.submit "Save inventory", class: "button button--primary" %>
+      <% end %>
+    </div>
+  </div>
+</section>

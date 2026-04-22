@@ -1,0 +1,40 @@
+<% content_for :title, @article.title %>
+<% content_for :meta_description, @article.excerpt %>
+
+<section class="page-hero page-hero--editorial">
+  <div class="container narrow">
+    <p class="eyebrow">Journal</p>
+    <h1><%= @article.title %></h1>
+    <p class="lead"><%= @article.excerpt %></p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow article-detail editorial-prose editorial-panel">
+    <p class="eyebrow"><%= @article.published_on.strftime("%B %d, %Y") %></p>
+    <% @article.body.to_s.split("\n\n").each do |paragraph| %>
+      <p><%= paragraph %></p>
+    <% end %>
+  </div>
+</section>
+
+<% if @related_articles.any? %>
+  <section class="section section--soft">
+    <div class="container">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">More stories</p>
+          <h2>Related articles</h2>
+        </div>
+      </div>
+      <div class="article-grid">
+        <% @related_articles.each do |article| %>
+          <article class="article-card article-card--editorial">
+            <h3><%= link_to article.title, article_path(article.slug) %></h3>
+            <p><%= article.excerpt %></p>
+          </article>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>

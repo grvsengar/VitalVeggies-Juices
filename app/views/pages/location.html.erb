@@ -1,0 +1,101 @@
+<% content_for :title, @service_area.meta_title %>
+<% content_for :meta_description, @service_area.meta_description %>
+<% content_for :head do %>
+  <%= tag.link rel: "canonical", href: location_page_url(@service_area.slug) %>
+  <script type="application/ld+json"><%= raw JSON.generate(location_page_schema(@service_area)) %></script>
+<% end %>
+
+<section class="page-hero page-hero--editorial">
+  <div class="container">
+    <p class="eyebrow">Service area</p>
+    <h1><%= @service_area.hero_title %></h1>
+    <p><%= @service_area.intro %></p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split-grid">
+    <article class="summary-card editorial-panel">
+      <h2>Why this page exists</h2>
+      <p>This landing page supports neighborhood search intent for customers looking for fresh juices, fruit baskets, and vegetables in <%= @service_area.full_name %>.</p>
+      <p><%= @service_area.delivery_note %></p>
+      <p><strong>Typical local landmarks:</strong> <%= @service_area.landmarks.to_sentence %>.</p>
+      <div class="story-card__actions">
+        <%= link_to "Shop products", products_path, class: "button button--primary" %>
+        <%= link_to "See delivery info", delivery_path, class: "button button--ghost" %>
+      </div>
+    </article>
+
+    <article class="summary-card editorial-panel">
+      <h2>Delivery expectations in <%= @service_area.name %></h2>
+      <div class="summary-row"><span>Order timing</span><strong>Same-day slots for orders placed before noon</strong></div>
+      <div class="summary-row"><span>Best-fit carts</span><strong>Juices, weekly vegetable baskets, and fruit refills</strong></div>
+      <div class="summary-row"><span>Threshold</span><strong>Free local delivery above <%= money(Cart::DELIVERY_THRESHOLD) %></strong></div>
+      <% if @featured_promotion %>
+        <p class="summary-note">Active promo: <strong><%= @featured_promotion.promo_code %></strong> for <%= @featured_promotion.title %>.</p>
+      <% end %>
+    </article>
+  </div>
+</section>
+
+<section class="section section--soft">
+  <div class="container">
+    <div class="section-heading section-heading--stacked">
+      <div>
+        <p class="eyebrow">Popular picks</p>
+        <h2>Products customers in <%= @service_area.name %> are likely to browse</h2>
+        <p>Using featured products here gives the page real catalog depth instead of thin SEO-only copy.</p>
+      </div>
+    </div>
+
+    <div class="product-grid product-grid--four">
+      <%= render partial: "shared/product_card", collection: @featured_products, as: :product %>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading section-heading--stacked">
+      <div>
+        <p class="eyebrow">Nearby coverage</p>
+        <h2>Also serving nearby Bengaluru neighborhoods</h2>
+      </div>
+    </div>
+
+    <div class="coverage-grid">
+      <% @service_area.nearby_areas.each do |area| %>
+        <article class="coverage-card">
+          <p class="eyebrow"><%= area.name %></p>
+          <h3><%= area.hero_title %></h3>
+          <p><%= area.intro %></p>
+          <%= link_to "View area page", location_page_path(area.slug), class: "text-link" %>
+        </article>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<% if @articles.any? %>
+  <section class="section section--light">
+    <div class="container">
+      <div class="section-heading section-heading--stacked">
+        <div>
+          <p class="eyebrow">Fresh content</p>
+          <h2>Editorial content that supports local discovery</h2>
+        </div>
+      </div>
+
+      <div class="coverage-grid">
+        <% @articles.each_with_index do |article, index| %>
+          <article class="coverage-card">
+            <img src="<%= article_image_path(article, index: index) %>" alt="<%= article.title %>">
+            <h3><%= article.title %></h3>
+            <p><%= article.excerpt %></p>
+            <%= link_to "Read article", article_path(article.slug), class: "text-link" %>
+          </article>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>

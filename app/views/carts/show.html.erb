@@ -1,0 +1,61 @@
+<% content_for :title, "Your Cart" %>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">Shopping cart</p>
+    <h1>Review your order before checkout</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container cart-layout">
+    <div>
+      <% if @stock_issues.any? %>
+        <div class="flash flash--alert">
+          <% @stock_issues.each do |issue| %>
+            <p><strong><%= issue[:item].product.name %></strong> has only <%= issue[:available_quantity] %> available. Update your cart before checkout.</p>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if current_cart.items.any? %>
+        <div class="cart-list">
+          <% current_cart.items.each do |item| %>
+            <article class="cart-item summary-card">
+              <div class="cart-item__info">
+                <h2><%= item.product.name %></h2>
+                <p><%= item.product.category.name %> / <%= item.product.product_kind.humanize %></p>
+              </div>
+              <%= form_with url: cart_item_path(item.product.id), method: :patch, class: "cart-item__form" do |form| %>
+                <%= form.number_field :quantity, value: item.quantity, min: 0, step: 1, inputmode: "numeric", class: "field field--small" %>
+                <span class="summary-note"><%= item.product.stock_quantity %> available</span>
+                <%= form.submit "Update", class: "button button--ghost" %>
+              <% end %>
+              <strong><%= money(item.total_price) %></strong>
+              <%= button_to "Remove", cart_item_path(item.product.id), method: :delete, class: "button button--ghost" %>
+            </article>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <h2>Your cart is empty</h2>
+          <p>Browse the catalog and add juices, fruit boxes, or vegetable packs to continue.</p>
+          <%= link_to "Browse products", products_path, class: "button button--primary" %>
+        </div>
+      <% end %>
+    </div>
+
+    <aside class="summary-card">
+      <h2>Order summary</h2>
+      <%= form_with url: cart_coupon_path, method: :post, class: "coupon-form" do |form| %>
+        <%= form.text_field :promo_code, value: current_promotion&.promo_code, placeholder: "Coupon code", class: "field" %>
+        <%= form.submit "Apply", class: "button button--ghost" %>
+      <% end %>
+      <div class="summary-row"><span>Subtotal</span><strong><%= money(current_cart.subtotal) %></strong></div>
+      <div class="summary-row"><span>Discount</span><strong>-<%= money(current_cart.discount_for(@promotion)) %></strong></div>
+      <div class="summary-row"><span>Delivery fee</span><strong><%= money(current_cart.delivery_fee) %></strong></div>
+      <div class="summary-row summary-row--total"><span>Total</span><strong><%= money(current_cart.subtotal - current_cart.discount_for(@promotion) + current_cart.delivery_fee) %></strong></div>
+      <%= link_to "Proceed to checkout", new_order_path, class: "button button--primary button--full #{'button--disabled' unless current_cart.valid_for_checkout?}", disabled: current_cart.count.zero? || !current_cart.valid_for_checkout? %>
+    </aside>
+  </div>
+</section>

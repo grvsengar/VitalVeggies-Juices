@@ -1,0 +1,13 @@
+<% content_for :title, "Add Product" %>
+
+<section class="manager-page">
+  <div class="manager-page__header">
+    <div>
+      <h1>Add product</h1>
+      <p>Create a storefront item with stock, pricing, category, and image details.</p>
+    </div>
+    <%= link_to "Back to products", manager_products_path, class: "manager-secondary-action" %>
+  </div>
+
+  <%= render "form", product: @product, title: "New market item", submit_label: "Create product" %>
+</section>

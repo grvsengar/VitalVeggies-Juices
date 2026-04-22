@@ -1,0 +1,24 @@
+<div class="form-card">
+  <p class="eyebrow">Catalog grouping</p>
+  <h2><%= title %></h2>
+
+  <% if category.errors.any? %>
+    <div class="flash flash--alert">
+      <strong>Check these fields:</strong>
+      <%= category.errors.full_messages.to_sentence %>
+    </div>
+  <% end %>
+
+  <%= form_with model: [:admin, category], class: "stack-form" do |form| %>
+    <%= form.text_field :name, class: "field", placeholder: "Category name" %>
+    <%= form.text_field :slug, class: "field", placeholder: "Slug (leave blank to auto-generate)" %>
+    <%= form.text_area :description, rows: 4, class: "field", placeholder: "Short storefront description" %>
+    <%= form.number_field :position, min: 0, class: "field", placeholder: "Sort position" %>
+    <label class="checkbox"><%= form.check_box :active %> Active storefront category</label>
+
+    <div class="admin-action-row">
+      <%= form.submit submit_label, class: "button button--primary" %>
+      <%= link_to "Back to categories", admin_categories_path, class: "button button--ghost" %>
+    </div>
+  <% end %>
+</div>

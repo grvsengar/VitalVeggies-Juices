@@ -1,0 +1,28 @@
+<article class="product-card">
+  <div class="product-card__media product-card__media--<%= product.product_kind %>">
+    <span class="<%= stock_badge_class(product) %>"><%= stock_badge(product) %></span>
+    <img src="<%= product_image_path(product) %>" alt="<%= product.name %>">
+  </div>
+  <div class="product-card__body">
+    <p class="product-card__category"><%= product.category.name %></p>
+    <div class="product-card__eyebrow">
+      <span><%= product.product_kind.humanize %></span>
+      <% if product.organic? %><span>Organic</span><% end %>
+      <% if product.local? %><span>Local</span><% end %>
+    </div>
+    <h3><%= link_to product.name, product_path(product.slug) %></h3>
+    <p><%= truncate(product.description, length: 65) %></p>
+    <div class="product-card__meta">
+      <strong><%= money(product.price) %></strong>
+      <span><%= product.stock_label %></span>
+    </div>
+    <div class="product-card__actions">
+      <%= link_to "View Details", product_path(product.slug), class: "button button--ghost button--small" %>
+      <%= form_with url: cart_items_path, method: :post, class: "inline-form" do |form| %>
+        <%= form.hidden_field :product_id, value: product.id %>
+        <%= form.hidden_field :quantity, value: 1 %>
+        <%= form.submit "Add to Cart", class: "button button--primary button--small", disabled: !product.in_stock? %>
+      <% end %>
+    </div>
+  </div>
+</article>

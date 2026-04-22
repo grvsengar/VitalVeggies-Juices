@@ -1,0 +1,11 @@
+<%= index_field_wrapper(**field_wrapper_args, flush: true) do %>
+  <% if @field.image_url.present? %>
+    <%= link_to_if @field.link_to_record,
+      image_tag(@field.image_url, width: @field.width, height: @field.height, style: "border-radius: #{@field.radius}px; object-fit: cover;"),
+      resource_view_path,
+      class: "block"
+    %>
+  <% else %>
+    —
+  <% end %>
+<% end %>

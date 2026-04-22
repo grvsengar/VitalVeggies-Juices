@@ -1,0 +1,25 @@
+<% content_for :title, "Manager Login" %>
+
+<section class="portal-auth">
+  <div class="container portal-auth__grid">
+    <div class="portal-auth__intro">
+      <p class="eyebrow">Manager portal</p>
+      <h1>Inventory and fulfilment access</h1>
+      <ul class="portal-list">
+        <% role_responsibilities(:manager).each do |responsibility| %>
+          <li><%= responsibility %></li>
+        <% end %>
+      </ul>
+      <p class="portal-auth__hint">Managers receive an email invite from admin. Open the link, register, then sign in here.</p>
+    </div>
+
+    <div class="form-card">
+      <h2>Sign in as manager</h2>
+      <%= form_with url: manager_login_path, class: "stack-form" do |form| %>
+        <%= form.email_field :email, class: "field", placeholder: "Manager email" %>
+        <%= form.password_field :password, class: "field", placeholder: "Password" %>
+        <%= form.submit "Enter Manager Portal", class: "button button--primary button--full" %>
+      <% end %>
+    </div>
+  </div>
+</section>

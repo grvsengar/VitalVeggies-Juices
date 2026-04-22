@@ -1,0 +1,31 @@
+<% content_for :title, "Buyer Account" %>
+
+<section class="section">
+  <div class="container">
+    <div class="portal-content-grid">
+      <div class="summary-card">
+        <p class="eyebrow">Buyer account</p>
+        <h2><%= current_user.name %></h2>
+        <p><strong>Email:</strong> <%= current_user.email %></p>
+        <ul class="portal-list">
+          <% current_user.responsibilities.each do |responsibility| %>
+            <li><%= responsibility %></li>
+          <% end %>
+        </ul>
+      </div>
+
+      <div class="summary-card">
+        <p class="eyebrow">Order history</p>
+        <h2><%= pluralize(@orders.count, "order") %> linked to this email</h2>
+        <div class="portal-table">
+          <% @orders.each do |order| %>
+            <div class="portal-table__row">
+              <span><%= order.order_number %></span>
+              <span><%= order.status.humanize %> · <%= money(order.total) %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

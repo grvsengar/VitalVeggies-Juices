@@ -1,0 +1,48 @@
+<% content_for :title, "Manager Orders" %>
+
+<section class="manager-page">
+  <div class="manager-page__header">
+    <div>
+      <h1>Orders</h1>
+      <p><%= Date.current.strftime("%A %d %B, %Y") %></p>
+    </div>
+  </div>
+
+  <div class="manager-order-filters">
+    <%= link_to "All", manager_orders_path(q: params[:q]), class: "manager-filter-pill #{'manager-filter-pill--active' if params[:status].blank?}" %>
+    <% Order.statuses.keys.each do |status| %>
+      <%= link_to status.humanize, manager_orders_path(status: status, q: params[:q]), class: "manager-filter-pill #{'manager-filter-pill--active' if params[:status] == status}" %>
+    <% end %>
+  </div>
+
+  <%= form_with url: manager_orders_path, method: :get, class: "manager-toolbar manager-toolbar--right" do |form| %>
+    <%= form.hidden_field :status, value: params[:status] if params[:status].present? %>
+    <%= form.search_field :q, value: params[:q], placeholder: "Search order, customer, phone...", class: "manager-search" %>
+    <%= form.submit "Search", class: "manager-primary-action" %>
+  <% end %>
+
+  <article class="manager-card">
+    <div class="manager-table manager-table--orders">
+      <div class="manager-table__head">
+        <span>Order ID</span>
+        <span>Customer</span>
+        <span>Date</span>
+        <span>Items</span>
+        <span>Total</span>
+        <span>Payment</span>
+        <span>Status</span>
+      </div>
+      <% @orders.each do |order| %>
+        <%= link_to manager_order_path(order), class: "manager-table__row" do %>
+          <strong><%= order.order_number %></strong>
+          <span><%= order.customer_name %></span>
+          <span><%= order.created_at.strftime("%b %d, %Y") %></span>
+          <span><%= order.order_items.sum(&:quantity) %></span>
+          <span><%= money(order.total) %></span>
+          <span class="<%= payment_badge_class(order.payment_status) %>"><%= order.payment_status.humanize %></span>
+          <span class="<%= order_status_badge_class(order.status) %>"><%= order.status.humanize %></span>
+        <% end %>
+      <% end %>
+    </div>
+  </article>
+</section>

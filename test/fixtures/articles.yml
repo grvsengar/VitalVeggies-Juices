@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: Morning Juice Guide
+  slug: morning-juice-guide
+  excerpt: A short guide to morning juices.
+  body: A longer article body about morning juices and healthy routines.
+  published: false
+  published_on: 2026-04-10
+  featured: false
+
+two:
+  title: Weekly Produce Planning
+  slug: weekly-produce-planning
+  excerpt: Tips for planning produce orders through the week.
+  body: A longer article body about weekly produce planning for households.
+  published: false
+  published_on: 2026-04-10
+  featured: false

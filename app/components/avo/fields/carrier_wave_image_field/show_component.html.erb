@@ -1,0 +1,10 @@
+<%= field_wrapper(**field_wrapper_args) do %>
+  <% if @field.image_url.present? %>
+    <%= image_tag @field.image_url,
+      width: 220,
+      style: "border-radius: #{@field.radius}px; max-width: 100%; height: auto;"
+    %>
+  <% else %>
+    —
+  <% end %>
+<% end %>
