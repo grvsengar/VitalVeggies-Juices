@@ -14,7 +14,6 @@ module Admin
       validate_manager_record!
       @manager.name = manager_params[:name]
       @manager.prepare_manager_invitation!(inviter: current_user)
-      ManagerInvitationMailer.invite(@manager).deliver_now
 
       redirect_to admin_managers_path, notice: "Manager invitation sent to #{@manager.email}."
     rescue ActiveRecord::RecordInvalid

@@ -4758,6 +4758,48 @@ h6,
   align-items: center;
 }
 
+.site-menu {
+  display: contents;
+}
+
+.site-menu-toggle {
+  display: none;
+  width: 46px;
+  height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  place-items: center;
+  padding: 0.55rem;
+}
+
+.site-menu-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.site-menu-toggle span + span {
+  margin-top: 5px;
+}
+
+.site-menu-toggle--open span:first-child {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.site-menu-toggle--open span:nth-child(2) {
+  opacity: 0;
+}
+
+.site-menu-toggle--open span:last-child {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
 .brand,
 .brand > span:last-child {
   min-width: 0;
@@ -4811,8 +4853,24 @@ h6,
   }
 
   .site-header__inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 0.9rem;
+  }
+
+  .site-menu-toggle {
+    display: grid;
+  }
+
+  .site-menu {
+    grid-column: 1 / -1;
+    display: none;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .site-menu--open {
+    display: grid;
+    gap: 1rem;
   }
 
   .site-nav,

@@ -33,6 +33,8 @@ class User < ApplicationRecord
   before_validation :normalize_email
   before_validation :ensure_manager_invitation_token
 
+  after_commit :send_manager_invitation, on: :create, if: :invited_manager?
+
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :name, presence: true, if: :registered?
   validates :password_digest, presence: true, if: :registered?
@@ -99,6 +101,10 @@ class User < ApplicationRecord
       registered_at: Time.current,
       invitation_token: nil
     )
+  end
+
+  def send_manager_invitation
+    ManagerInvitationMailer.invite(self).deliver_later
   end
 
   def self.digest_password(password, salt)
