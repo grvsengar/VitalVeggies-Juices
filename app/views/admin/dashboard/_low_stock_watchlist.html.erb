@@ -1,0 +1,13 @@
+<% products = local_assigns.fetch(:products) { Product.active.where(stock_quantity: 0..5).ordered.limit(6) } %>
+
+<div id="admin_low_stock_watchlist" class="summary-card product-live-region">
+  <h2>Low stock watchlist</h2>
+  <div class="portal-table">
+    <% products.each do |product| %>
+      <div class="portal-table__row">
+        <span><%= product.name %></span>
+        <strong><%= product.stock_quantity %> left</strong>
+      </div>
+    <% end %>
+  </div>
+</div>

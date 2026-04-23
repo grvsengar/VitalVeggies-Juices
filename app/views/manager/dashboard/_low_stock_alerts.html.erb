@@ -1,0 +1,21 @@
+<% products = local_assigns.fetch(:products) { Product.active.includes(:category).where(stock_quantity: 0..5).ordered.limit(6) } %>
+
+<article id="manager_low_stock_alerts" class="manager-card product-live-region">
+  <div class="manager-card__header">
+    <h2>Low stock alerts</h2>
+    <%= link_to "Inventory", manager_inventory_index_path(stock: "low_stock"), class: "manager-text-link", data: { turbo_frame: "_top" } %>
+  </div>
+
+  <div class="manager-stock-list">
+    <% products.each do |product| %>
+      <%= link_to edit_manager_inventory_path(product), class: "manager-stock-item", data: { turbo_frame: "_top" } do %>
+        <%= image_tag product_image_path(product), alt: product.name, loading: "lazy", decoding: "async" %>
+        <span>
+          <strong><%= product.name %></strong>
+          <small><%= product.sku %></small>
+        </span>
+        <span class="<%= stock_badge_class(product) %>"><%= stock_badge(product) %></span>
+      <% end %>
+    <% end %>
+  </div>
+</article>

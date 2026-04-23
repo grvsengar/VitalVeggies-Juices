@@ -26,6 +26,7 @@ class Product < ApplicationRecord
 
   before_validation :generate_slug
   before_validation :generate_sku
+  after_update_commit :broadcast_live_inventory, if: :live_inventory_changed?
 
   def self.filtered(params)
     scope = includes(:category).active.ordered
@@ -61,11 +62,16 @@ class Product < ApplicationRecord
     stock_quantity.positive?
   end
 
+  def available_for_purchase?
+    active? && in_stock?
+  end
+
   def low_stock?
     in_stock? && stock_quantity <= 5
   end
 
   def stock_label
+    return "Unavailable" unless active?
     return "Sold out" unless in_stock?
     return "Only #{stock_quantity} left" if low_stock?
 
@@ -73,6 +79,58 @@ class Product < ApplicationRecord
   end
 
   private
+
+  def live_inventory_changed?
+    (previous_changes.keys & %w[name slug sku price stock_quantity active category_id product_kind image description organic local seasonal]).any?
+  end
+
+  def broadcast_live_inventory
+    broadcast_replace_to "inventory",
+                         target: ActionView::RecordIdentifier.dom_id(self, :stock_badge),
+                         partial: "shared/product_stock_badge",
+                         locals: { product: self }
+
+    broadcast_replace_to "inventory",
+                         target: ActionView::RecordIdentifier.dom_id(self, :card_purchase),
+                         partial: "shared/product_card_purchase",
+                         locals: { product: self }
+
+    broadcast_replace_to "inventory",
+                         target: ActionView::RecordIdentifier.dom_id(self, :detail_purchase),
+                         partial: "products/detail_purchase",
+                         locals: { product: self }
+
+    broadcast_replace_to "inventory",
+                         target: ActionView::RecordIdentifier.dom_id(self, :admin_product_card),
+                         partial: "admin/products/product_card",
+                         locals: { product: self }
+
+    broadcast_replace_to "inventory",
+                         target: ActionView::RecordIdentifier.dom_id(self, :manager_inventory_row),
+                         partial: "manager/inventory/product_row",
+                         locals: { product: self }
+
+    broadcast_replace_to "inventory",
+                         target: ActionView::RecordIdentifier.dom_id(self, :manager_product_row),
+                         partial: "manager/products/product_row",
+                         locals: { product: self }
+
+    broadcast_replace_to "inventory",
+                         target: "admin_dashboard_metrics",
+                         partial: "admin/dashboard/metrics"
+
+    broadcast_replace_to "inventory",
+                         target: "admin_low_stock_watchlist",
+                         partial: "admin/dashboard/low_stock_watchlist"
+
+    broadcast_replace_to "inventory",
+                         target: "manager_dashboard_metrics",
+                         partial: "manager/dashboard/metrics"
+
+    broadcast_replace_to "inventory",
+                         target: "manager_low_stock_alerts",
+                         partial: "manager/dashboard/low_stock_alerts"
+  end
 
   def generate_slug
     self.slug = name.to_s.parameterize if slug.blank?

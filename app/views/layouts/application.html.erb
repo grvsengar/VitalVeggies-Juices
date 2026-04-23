@@ -20,6 +20,8 @@
 
   <body>
     <% unless @hide_site_chrome %>
+      <%= turbo_stream_from "inventory" %>
+
       <div class="topbar">
         <div class="container topbar__inner">
           <div class="topbar__item"><strong>Call:</strong> <%= business_details[:phone] %></div>
@@ -71,7 +73,7 @@
               <% else %>
                 <%= link_to "Sign in", login_path, class: "button button--ghost" %>
               <% end %>
-              <%= link_to "Cart (#{current_cart.count})", cart_path, class: "button button--primary", id: "cart-link" %>
+              <%= render "shared/cart_link" %>
             </div>
           </div>
         </div>
@@ -81,9 +83,7 @@
     <main>
       <% unless @hide_site_chrome %>
         <div id="flash" class="container flash-stack">
-          <% flash.each do |type, message| %>
-            <div class="flash flash--<%= type %>"><%= message %></div>
-          <% end %>
+          <%= render "shared/flash" %>
         </div>
       <% end %>
 

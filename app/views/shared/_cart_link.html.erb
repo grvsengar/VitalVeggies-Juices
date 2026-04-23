@@ -1,0 +1,7 @@
+<% cart_link_classes = ["button button--primary cart-link", ("cart-link--pulse" if local_assigns[:pulse])].compact.join(" ") %>
+
+<%= link_to "Cart (#{current_cart.count})",
+            cart_path,
+            class: cart_link_classes,
+            id: "cart-link",
+            aria: { live: "polite" } %>

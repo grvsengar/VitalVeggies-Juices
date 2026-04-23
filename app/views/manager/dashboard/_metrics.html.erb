@@ -1,0 +1,32 @@
+<%
+  metrics = local_assigns[:metrics] || {
+    pending_orders: Order.where(status: %i[pending confirmed preparing]).count,
+    out_for_delivery: Order.out_for_delivery.count,
+    low_stock: Product.active.where(stock_quantity: 0..5).count,
+    sold_out: Product.active.where(stock_quantity: 0).count,
+    active_products: Product.active.count
+  }
+%>
+
+<div id="manager_dashboard_metrics" class="manager-metrics product-live-region">
+  <article class="manager-metric-card">
+    <span>Open orders</span>
+    <strong><%= metrics[:pending_orders] %></strong>
+    <small>Need fulfilment review</small>
+  </article>
+  <article class="manager-metric-card">
+    <span>Out for delivery</span>
+    <strong><%= metrics[:out_for_delivery] %></strong>
+    <small>Currently on route</small>
+  </article>
+  <article class="manager-metric-card">
+    <span>Active products</span>
+    <strong><%= metrics[:active_products] %></strong>
+    <small>Visible in storefront</small>
+  </article>
+  <article class="manager-metric-card">
+    <span>Stock alerts</span>
+    <strong><%= metrics[:low_stock] %></strong>
+    <small><%= metrics[:sold_out] %> sold out</small>
+  </article>
+</div>

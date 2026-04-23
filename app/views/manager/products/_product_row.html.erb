@@ -1,0 +1,15 @@
+<%= turbo_frame_tag dom_id(product, :manager_product_row), class: "manager-live-row product-live-region" do %>
+  <%= link_to edit_manager_inventory_path(product), class: "manager-table__row", data: { turbo_frame: "_top" } do %>
+    <span class="manager-product-cell">
+      <%= image_tag product_image_path(product), alt: product.name, loading: "lazy", decoding: "async" %>
+      <strong><%= product.name %></strong>
+    </span>
+    <span><%= product.sku %></span>
+    <span><%= product.category.name %></span>
+    <span><%= money(product.price) %></span>
+    <span><%= product.stock_quantity %></span>
+    <span class="<%= product.active? ? 'manager-pill manager-pill--ok' : 'manager-pill manager-pill--danger' %>">
+      <%= product.active? ? "Active" : "Hidden" %>
+    </span>
+  <% end %>
+<% end %>

@@ -9,28 +9,7 @@
     <%= link_to "Update inventory", manager_inventory_index_path, class: "manager-primary-action" %>
   </div>
 
-  <div class="manager-metrics">
-    <article class="manager-metric-card">
-      <span>Open orders</span>
-      <strong><%= @metrics[:pending_orders] %></strong>
-      <small>Need fulfilment review</small>
-    </article>
-    <article class="manager-metric-card">
-      <span>Out for delivery</span>
-      <strong><%= @metrics[:out_for_delivery] %></strong>
-      <small>Currently on route</small>
-    </article>
-    <article class="manager-metric-card">
-      <span>Active products</span>
-      <strong><%= @metrics[:active_products] %></strong>
-      <small>Visible in storefront</small>
-    </article>
-    <article class="manager-metric-card">
-      <span>Stock alerts</span>
-      <strong><%= @metrics[:low_stock] %></strong>
-      <small><%= @metrics[:sold_out] %> sold out</small>
-    </article>
-  </div>
+  <%= render "manager/dashboard/metrics", metrics: @metrics %>
 
   <div class="manager-grid">
     <article class="manager-card manager-card--wide">
@@ -57,24 +36,6 @@
       </div>
     </article>
 
-    <article class="manager-card">
-      <div class="manager-card__header">
-        <h2>Low stock alerts</h2>
-        <%= link_to "Inventory", manager_inventory_index_path(stock: "low_stock"), class: "manager-text-link" %>
-      </div>
-
-      <div class="manager-stock-list">
-        <% @low_stock_products.each do |product| %>
-          <%= link_to edit_manager_inventory_path(product), class: "manager-stock-item" do %>
-            <%= image_tag product_image_path(product), alt: product.name %>
-            <span>
-              <strong><%= product.name %></strong>
-              <small><%= product.sku %></small>
-            </span>
-            <span class="<%= stock_badge_class(product) %>"><%= stock_badge(product) %></span>
-          <% end %>
-        <% end %>
-      </div>
-    </article>
+    <%= render "manager/dashboard/low_stock_alerts", products: @low_stock_products %>
   </div>
 </section>

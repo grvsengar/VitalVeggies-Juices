@@ -27,17 +27,7 @@
         <span>Status</span>
       </div>
       <% @products.each do |product| %>
-        <%= link_to edit_manager_inventory_path(product), class: "manager-table__row" do %>
-          <span class="manager-product-cell">
-            <%= image_tag product_image_path(product), alt: product.name %>
-            <strong><%= product.name %></strong>
-          </span>
-          <span><%= product.sku %></span>
-          <span><%= product.category.name %></span>
-          <span><%= money(product.price) %></span>
-          <span><%= product.stock_quantity %></span>
-          <span class="<%= stock_badge_class(product) %>"><%= stock_badge(product) %></span>
-        <% end %>
+        <%= render "manager/inventory/product_row", product: product %>
       <% end %>
     </div>
   </article>

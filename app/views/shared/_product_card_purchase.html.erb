@@ -1,0 +1,14 @@
+<%= turbo_frame_tag dom_id(product, :card_purchase), class: "product-live-region product-card__purchase" do %>
+  <div class="product-card__meta">
+    <strong><%= money(product.price) %></strong>
+    <span><%= product.stock_label %></span>
+  </div>
+  <div class="product-card__actions">
+    <%= link_to "View Details", product_path(product.slug), class: "button button--ghost button--small", data: { turbo_frame: "_top" } %>
+    <%= form_with url: cart_items_path, method: :post, class: "inline-form", data: { turbo_frame: "_top" } do |form| %>
+      <%= form.hidden_field :product_id, value: product.id %>
+      <%= form.hidden_field :quantity, value: 1 %>
+      <%= form.submit "Add to Cart", class: "button button--primary button--small", disabled: !product.available_for_purchase? %>
+    <% end %>
+  </div>
+<% end %>

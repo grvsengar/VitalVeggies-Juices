@@ -1,0 +1,15 @@
+<%
+  metrics = local_assigns[:metrics] || {
+    products: Product.count,
+    active_orders: Order.where(status: %i[pending confirmed preparing out_for_delivery]).count,
+    low_stock: Product.active.where(stock_quantity: 0..5).count,
+    revenue: Order.delivered.sum(:total)
+  }
+%>
+
+<div id="admin_dashboard_metrics" class="portal-metrics product-live-region">
+  <article class="summary-card"><h3><%= metrics[:products] %></h3><p>Total products</p></article>
+  <article class="summary-card"><h3><%= metrics[:active_orders] %></h3><p>Active orders</p></article>
+  <article class="summary-card"><h3><%= metrics[:low_stock] %></h3><p>Low-stock items</p></article>
+  <article class="summary-card"><h3><%= money(metrics[:revenue]) %></h3><p>Delivered revenue</p></article>
+</div>

@@ -1,0 +1,17 @@
+<%= turbo_frame_tag dom_id(product, :admin_product_card), class: "admin-live-card product-live-region" do %>
+  <article class="summary-card admin-product-card">
+    <div class="admin-product-thumb">
+      <%= image_tag product_image_path(product), alt: product.name, loading: "lazy", decoding: "async" %>
+    </div>
+    <div class="admin-product-card__title">
+      <strong><%= product.name %></strong>
+      <span class="<%= stock_badge_class(product) %>"><%= stock_badge(product) %></span>
+    </div>
+    <p class="admin-product-card__meta"><%= product.sku %> · <%= product.category.name %> · <%= product.product_kind.humanize %></p>
+    <p class="admin-product-card__meta"><%= money(product.price) %> · <%= product.stock_quantity %> units · <%= product.active? ? "Visible" : "Hidden" %></p>
+    <div class="admin-action-row admin-product-card__actions">
+      <%= link_to "Edit", edit_admin_product_path(product), class: "button button--ghost button--small", data: { turbo_frame: "_top" } %>
+      <%= button_to "Delete", admin_product_path(product), method: :delete, class: "button button--ghost button--small", form: { data: { turbo_confirm: "Delete #{product.name}? Products with order history will be deactivated instead.", turbo_frame: "_top" } } %>
+    </div>
+  </article>
+<% end %>

@@ -9,12 +9,7 @@
       </div>
     </div>
 
-    <div class="portal-metrics">
-      <article class="summary-card"><h3><%= @metrics[:products] %></h3><p>Total products</p></article>
-      <article class="summary-card"><h3><%= @metrics[:active_orders] %></h3><p>Active orders</p></article>
-      <article class="summary-card"><h3><%= @metrics[:low_stock] %></h3><p>Low-stock items</p></article>
-      <article class="summary-card"><h3><%= money(@metrics[:revenue]) %></h3><p>Delivered revenue</p></article>
-    </div>
+    <%= render "admin/dashboard/metrics", metrics: @metrics %>
 
     <div class="portal-content-grid">
       <div class="summary-card">
@@ -27,17 +22,7 @@
         <p><%= link_to "Create or review managers", admin_managers_path, class: "text-link" %></p>
       </div>
 
-      <div class="summary-card">
-        <h2>Low stock watchlist</h2>
-        <div class="portal-table">
-          <% @low_stock_products.each do |product| %>
-            <div class="portal-table__row">
-              <span><%= product.name %></span>
-              <strong><%= product.stock_quantity %> left</strong>
-            </div>
-          <% end %>
-        </div>
-      </div>
+      <%= render "admin/dashboard/low_stock_watchlist", products: @low_stock_products %>
     </div>
 
     <div class="summary-card">

@@ -11,6 +11,10 @@
   </head>
 
   <body class="portal-body <%= "portal-body--manager" if portal_signed_in?(:manager) && !@hide_portal_nav %>">
+    <% unless @hide_portal_nav %>
+      <%= turbo_stream_from "inventory" %>
+    <% end %>
+
     <% if portal_signed_in?(:manager) && !@hide_portal_nav %>
       <div class="manager-shell">
         <aside class="manager-sidebar">

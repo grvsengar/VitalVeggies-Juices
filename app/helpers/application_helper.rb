@@ -127,6 +127,7 @@ module ApplicationHelper
   end
 
   def stock_badge(product)
+    return "Unavailable" unless product.active?
     return "Sold out" unless product.in_stock?
     return "Low stock" if product.low_stock?
 
@@ -134,7 +135,7 @@ module ApplicationHelper
   end
 
   def stock_badge_class(product)
-    return "inventory-pill inventory-pill--danger" unless product.in_stock?
+    return "inventory-pill inventory-pill--danger" unless product.active? && product.in_stock?
     return "inventory-pill inventory-pill--warn" if product.low_stock?
 
     "inventory-pill inventory-pill--ok"
