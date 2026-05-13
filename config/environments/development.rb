@@ -20,9 +20,17 @@ Rails.application.configure do
   if Rails.root.join("tmp/caching-dev.txt").exist?
     config.action_controller.perform_caching = true
     config.action_controller.enable_fragment_cache_logging = true
-    config.public_file_server.headers = { "cache-control" => "public, max-age=#{2.days.to_i}" }
+    config.public_file_server.headers = {
+      "cache-control" => "public, max-age=#{2.days.to_i}",
+      "Cross-Origin-Resource-Policy" => "same-origin",
+      "Cross-Origin-Embedder-Policy" => "credentialless"
+    }
   else
     config.action_controller.perform_caching = false
+    config.public_file_server.headers = {
+      "Cross-Origin-Resource-Policy" => "same-origin",
+      "Cross-Origin-Embedder-Policy" => "credentialless"
+    }
   end
 
   # Change to :null_store to avoid any caching.

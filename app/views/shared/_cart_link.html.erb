@@ -1,7 +1,16 @@
 <% cart_link_classes = ["button button--primary cart-link", ("cart-link--pulse" if local_assigns[:pulse])].compact.join(" ") %>
 
-<%= link_to "Cart (#{current_cart.count})",
-            cart_path,
+<%= link_to cart_path,
             class: cart_link_classes,
             id: "cart-link",
-            aria: { live: "polite" } %>
+            aria: { label: "Cart with #{current_cart.count} items", live: "polite" } do %>
+  <span class="cart-link__icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 5h2l2.2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.76L21 7H7.4" />
+      <circle cx="10" cy="19" r="1.6" />
+      <circle cx="18" cy="19" r="1.6" />
+    </svg>
+  </span>
+  <span class="cart-link__label">Cart</span>
+  <span class="cart-link__count"><%= current_cart.count %></span>
+<% end %>

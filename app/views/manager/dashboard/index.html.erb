@@ -1,5 +1,7 @@
 <% content_for :title, "Manager Dashboard" %>
 
+<%= turbo_stream_from "manager_dashboard" %>
+
 <section class="manager-page">
   <div class="manager-page__header">
     <div>
@@ -9,32 +11,11 @@
     <%= link_to "Update inventory", manager_inventory_index_path, class: "manager-primary-action" %>
   </div>
 
-  <%= render "manager/dashboard/metrics", metrics: @metrics %>
+  <%= render "manager/dashboard/metrics", metrics: @metrics, analytics: @analytics %>
+  <%= render "manager/dashboard/analytics", analytics: @analytics %>
 
   <div class="manager-grid">
-    <article class="manager-card manager-card--wide">
-      <div class="manager-card__header">
-        <h2>Recent orders</h2>
-        <%= link_to "View all orders", manager_orders_path, class: "manager-text-link" %>
-      </div>
-
-      <div class="manager-table">
-        <div class="manager-table__head">
-          <span>Order</span>
-          <span>Customer</span>
-          <span>Total</span>
-          <span>Status</span>
-        </div>
-        <% @active_orders.each do |order| %>
-          <%= link_to manager_order_path(order), class: "manager-table__row" do %>
-            <strong><%= order.order_number %></strong>
-            <span><%= order.customer_name %></span>
-            <span><%= money(order.total) %></span>
-            <span class="<%= order_status_badge_class(order.status) %>"><%= order.status.humanize %></span>
-          <% end %>
-        <% end %>
-      </div>
-    </article>
+    <%= render "manager/dashboard/recent_orders", orders: @recent_orders %>
 
     <%= render "manager/dashboard/low_stock_alerts", products: @low_stock_products %>
   </div>

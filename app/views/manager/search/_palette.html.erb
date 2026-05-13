@@ -1,0 +1,43 @@
+<div id="command-palette" 
+     class="command-palette" 
+     data-controller="command-palette" 
+     data-action="keydown.meta+k@window->command-palette#toggle keydown.ctrl+k@window->command-palette#toggle keydown.esc@window->command-palette#close"
+     hidden>
+  <div class="command-palette__overlay" data-action="click->command-palette#close"></div>
+  
+  <div class="command-palette__container">
+    <div class="command-palette__header">
+      <svg class="command-palette__search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <%= form_with url: manager_search_path, method: :get, data: { turbo_frame: "command_palette_results" } do |f| %>
+        <%= f.search_field :q, 
+            placeholder: "Search orders, products, or navigation...", 
+            class: "command-palette__input",
+            autocomplete: "off",
+            data: { 
+              command_palette_target: "input",
+              action: "input->command-palette#search keydown->command-palette#navigate"
+            } %>
+      <% end %>
+    </div>
+
+    <div class="command-palette__body">
+      <%= turbo_frame_tag "command_palette_results" do %>
+        <div class="command-palette__empty-state">
+          <p>Start typing or jump straight to a manager tool.</p>
+          <div class="command-palette__shortcuts">
+            <span><kbd>cmd</kbd><kbd>k</kbd> to open</span>
+            <span><kbd>↑↓</kbd> to navigate</span>
+            <span><kbd>↵</kbd> to select</span>
+            <span><kbd>esc</kbd> to close</span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="command-palette__footer">
+      <span class="command-palette__brand">Vital Manager Palette</span>
+    </div>
+  </div>
+</div>

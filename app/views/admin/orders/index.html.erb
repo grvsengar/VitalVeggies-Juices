@@ -1,5 +1,7 @@
 <% content_for :title, "Admin Orders" %>
 
+<%= turbo_stream_from "admin_orders" %>
+
 <section class="section">
   <div class="container">
     <div class="section-heading">
@@ -10,12 +12,11 @@
     </div>
 
     <div class="portal-table">
-      <% @orders.each do |order| %>
-        <div class="portal-table__row">
-          <span><%= link_to order.order_number, admin_order_path(order) %> · <%= order.customer_name %></span>
-          <span><%= order.status.humanize %> · <%= order.payment_status.humanize %> · <%= money(order.total) %></span>
-        </div>
-      <% end %>
+      <div id="admin_orders_rows">
+        <% @orders.each do |order| %>
+          <%= render "order_row", order: order, highlight: false %>
+        <% end %>
+      </div>
     </div>
   </div>
 </section>

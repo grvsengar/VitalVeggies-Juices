@@ -1,0 +1,22 @@
+<% orders = local_assigns[:orders] || Order.dashboard_recent_orders %>
+
+<article class="manager-card manager-card--wide">
+  <div class="manager-card__header">
+    <h2>Recent orders</h2>
+    <%= link_to "View all orders", manager_orders_path, class: "manager-text-link" %>
+  </div>
+
+  <div class="manager-table">
+    <div class="manager-table__head">
+      <span>Order</span>
+      <span>Customer</span>
+      <span>Total</span>
+      <span>Status</span>
+    </div>
+    <div id="manager_dashboard_recent_orders_rows" class="manager-table__body">
+      <% orders.each do |order| %>
+        <%= render "manager/dashboard/recent_order_row", order: order, highlight: false %>
+      <% end %>
+    </div>
+  </div>
+</article>

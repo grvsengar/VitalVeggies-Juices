@@ -1,4 +1,7 @@
 class Article < ApplicationRecord
+  mount_uploader :image, ArticleImageUploader
+  mount_uploader :video, VideoUploader
+
   validates :title, :slug, :excerpt, :body, presence: true
   validates :slug, uniqueness: true
 

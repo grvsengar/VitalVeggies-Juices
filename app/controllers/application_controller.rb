@@ -4,10 +4,18 @@ class ApplicationController < ActionController::Base
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
   before_action :set_current_cart
+  before_action :set_coop_coep_headers
 
   helper_method :current_cart, :current_promotion, :current_user, :portal_signed_in?, :buyer_signed_in?
 
   private
+
+  def set_coop_coep_headers
+    # Required for SharedArrayBuffer used by ffmpeg.wasm
+    response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+    response.headers['Cross-Origin-Embedder-Policy'] = 'credentialless'
+    response.headers['Cross-Origin-Resource-Policy'] = 'same-origin'
+  end
 
   def set_current_cart
     session[:cart] ||= {}
@@ -45,7 +53,7 @@ class ApplicationController < ActionController::Base
     return if portal_signed_in?(role)
 
     reset_user_session
-    redirect_to public_send("#{role}_login_path"), alert: "Please sign in to continue."
+    redirect_to login_path, alert: "Please sign in to continue."
   end
 
   def require_buyer!

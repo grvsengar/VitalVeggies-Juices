@@ -158,7 +158,9 @@ Avo.configure do |config|
   #     all_tools
   #   end
   # }
-  # config.profile_menu = -> {
-  #   link "Profile", path: "/avo/profile", icon: "heroicons/outline/user-circle"
-  # }
+  config.profile_menu = -> {
+    link "Profile", path: "/avo/resources/users/#{_current_user.id}", icon: "heroicons/outline/user-circle"
+    link "Home", path: "/", icon: "heroicons/outline/home"
+    link "Logout", path: "/logout", icon: "heroicons/outline/arrow-left-on-rectangle"
+  }
 end

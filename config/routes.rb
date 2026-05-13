@@ -14,7 +14,16 @@ Rails.application.routes.draw do
   delete "cart/items/:product_id", to: "carts#destroy"
   post "cart/coupon", to: "carts#apply_coupon", as: :cart_coupon
 
-  resources :orders, only: %i[new create show]
+  resources :orders, only: %i[new create show] do
+    member do
+      get :payment
+    end
+
+    collection do
+      post :payment_callback
+      post :payment_webhook
+    end
+  end
   get "track-order", to: "orders#tracking_form", as: :track_order
   post "track-order", to: "orders#track"
 
@@ -52,11 +61,16 @@ Rails.application.routes.draw do
     match "logout", to: "/sessions#destroy", via: %i[get delete]
     get "register/:token", to: "registrations#edit", as: :register
     patch "register/:token", to: "registrations#update"
-    root "inventory#index"
+    root "dashboard#index"
+    get "dashboard", to: "dashboard#index", as: :dashboard
     resources :products, only: %i[index new create]
     resources :categories, only: :index
     resources :inventory, only: %i[index edit update], controller: "inventory"
     resources :orders, only: %i[index show update]
+    get "marketing-studio/audio", to: "marketing_studio#audio", as: :marketing_studio_audio
+    get "marketing-studio/:article_id/video", to: "marketing_studio#video", as: :marketing_studio_video
+    get "marketing-studio", to: "marketing_studio#show", as: :marketing_studio
+    get "search", to: "search#show", as: :search
   end
 
   namespace :buyer do

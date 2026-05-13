@@ -1,40 +1,85 @@
 <% content_for :title, @article.title %>
-<% content_for :meta_description, @article.excerpt %>
 
-<section class="page-hero page-hero--editorial">
-  <div class="container narrow">
-    <p class="eyebrow">Journal</p>
-    <h1><%= @article.title %></h1>
-    <p class="lead"><%= @article.excerpt %></p>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container narrow article-detail editorial-prose editorial-panel">
-    <p class="eyebrow"><%= @article.published_on.strftime("%B %d, %Y") %></p>
-    <% @article.body.to_s.split("\n\n").each do |paragraph| %>
-      <p><%= paragraph %></p>
-    <% end %>
-  </div>
-</section>
-
-<% if @related_articles.any? %>
-  <section class="section section--soft">
-    <div class="container">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">More stories</p>
-          <h2>Related articles</h2>
+<article class="premium-article" data-controller="article-view">
+  <header class="article-hero">
+    <div class="container article-hero__inner">
+      <div class="article-meta">
+        <span class="category-pill">Health & Wellness</span>
+        <time class="publish-date"><%= @article.published_on&.strftime("%B %d, %Y") %></time>
+      </div>
+      <h1 class="article-title"><%= @article.title %></h1>
+      <p class="article-excerpt"><%= @article.excerpt %></p>
+      
+      <div class="article-author">
+        <div class="avatar">VV</div>
+        <div class="author-details">
+          <strong>Vital Veggies Editorial</strong>
+          <span>Nutrition & Farm Experts</span>
         </div>
       </div>
-      <div class="article-grid">
-        <% @related_articles.each do |article| %>
-          <article class="article-card article-card--editorial">
-            <h3><%= link_to article.title, article_path(article.slug) %></h3>
-            <p><%= article.excerpt %></p>
-          </article>
-        <% end %>
-      </div>
     </div>
-  </section>
-<% end %>
+
+    <% if @article.image? %>
+      <div class="container hero-image-container">
+        <%= image_tag @article.image.url, class: "hero-image", alt: @article.title %>
+      </div>
+    <% end %>
+  </header>
+
+  <div class="container article-layout">
+    <aside class="article-sidebar">
+      <div class="sticky-tools">
+        <p class="sidebar-label">Share article</p>
+        <div class="social-share-stack">
+          <%= link_to "https://twitter.com/intent/tweet?text=#{@article.title}&url=#{request.original_url}", class: "social-btn", target: "_blank" do %>
+            <span>X</span>
+          <% end %>
+          <%= link_to "https://www.facebook.com/sharer/sharer.php?u=#{request.original_url}", class: "social-btn", target: "_blank" do %>
+            <span>FB</span>
+          <% end %>
+          <%= link_to "#", class: "social-btn", data: { action: "click->article-view#copyLink" } do %>
+            <span>🔗</span>
+          <% end %>
+        </div>
+      </div>
+    </aside>
+
+    <main class="article-content rich-text">
+      <%= @article.body.html_safe %>
+      
+      <% if @article.video? %>
+        <div class="article-video-box">
+          <video controls class="article-video" preload="metadata">
+            <source src="<%= @article.video.url %>" type="video/mp4">
+          </video>
+        </div>
+      <% end %>
+    </main>
+  </div>
+</article>
+
+<style>
+  .premium-article { padding-bottom: 5rem; }
+  .article-hero { background: #fafdf7; padding: 4rem 0 0; text-align: center; }
+  .article-hero__inner { max-width: 800px; margin: 0 auto; }
+  .article-meta { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem; }
+  .category-pill { background: #eef5eb; color: #15803d; padding: 0.25rem 0.75rem; border-radius: 999px; font-weight: 500; font-size: 0.85rem; }
+  .publish-date { color: #64748b; font-size: 0.9rem; }
+  .article-title { font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -0.02em; }
+  .article-excerpt { font-size: 1.25rem; color: #475569; margin-bottom: 2.5rem; line-height: 1.6; }
+  .article-author { display: inline-flex; align-items: center; gap: 1rem; text-align: left; margin-bottom: 4rem; }
+  
+  .hero-image-container { margin-top: -2rem; margin-bottom: 4rem; }
+  .hero-image { width: 100%; border-radius: 24px; box-shadow: 0 40px 80px rgba(0,0,0,0.1); object-fit: cover; max-height: 600px; }
+
+  .article-layout { display: grid; grid-template-columns: 200px 1fr; gap: 4rem; }
+  .sticky-tools { position: sticky; top: 100px; }
+  .sidebar-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1rem; }
+  .social-share-stack { display: flex; flex-direction: column; gap: 0.75rem; }
+  .social-btn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 12px; text-decoration: none; color: #1e293b; transition: all 0.2s; }
+  .social-btn:hover { background: white; border-color: #4ade80; color: #15803d; transform: translateY(-2px); }
+
+  .article-content { font-size: 1.15rem; line-height: 1.8; color: #1e293b; max-width: 800px; }
+  .article-video-box { margin: 3rem 0; border-radius: 16px; overflow: hidden; background: black; }
+  .article-video { width: 100%; display: block; }
+</style>

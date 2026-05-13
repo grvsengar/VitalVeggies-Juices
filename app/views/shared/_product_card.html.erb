@@ -1,5 +1,5 @@
-<article class="product-card">
-  <div class="product-card__media product-card__media--<%= product.product_kind %>">
+<article class="product-card" data-controller="tilt-card" data-action="mousemove->tilt-card#move mouseleave->tilt-card#reset">
+  <div class="product-card__media product-card__media--<%= product.product_kind %>" style="view-transition-name: <%= product_transition_name(product) %>">
     <%= render "shared/product_stock_badge", product: product %>
     <img src="<%= product_image_path(product) %>" alt="<%= product.name %>" loading="lazy" decoding="async">
   </div>

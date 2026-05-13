@@ -1,0 +1,10 @@
+<div class="market-pulse"
+     data-controller="market-pulse"
+     data-market-pulse-messages-value="<%= json_escape(messages.to_json) %>">
+  <div class="market-pulse__dot" aria-hidden="true"></div>
+  <div class="market-pulse__content">
+    <strong>Market Pulse</strong>
+    <p data-market-pulse-target="message"></p>
+    <small data-market-pulse-target="meta"></small>
+  </div>
+</div>

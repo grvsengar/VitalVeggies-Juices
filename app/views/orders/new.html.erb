@@ -42,16 +42,29 @@
         <% end %>
 
         <div id="new-address-fields" class="two-column" style="<%= 'display: none;' if buyer_signed_in? && @addresses&.any? && @addresses.any?(&:is_default?) %>">
+          <div style="grid-column: span 2;">
+            <h2 style="margin-bottom: 0.5rem;">Contact & Address</h2>
+            <p style="margin-bottom: 1rem; color: #666;">Please provide your delivery and contact details.</p>
+          </div>
           <%= form.text_field :customer_name, placeholder: "Full name", class: "field" %>
           <%= form.email_field :email, placeholder: "Email address", class: "field" %>
           <%= form.telephone_field :phone, placeholder: "Phone number", class: "field" %>
-          <%= form.select :delivery_window, options_for_select(["8 AM - 11 AM", "11 AM - 2 PM", "2 PM - 5 PM", "5 PM - 8 PM"], @order.delivery_window), { include_blank: "Preferred delivery window" }, class: "field" %>
+          <div class="field-spacer"></div>
           <%= form.text_field :address_line1, placeholder: "Address line 1", class: "field" %>
           <%= form.text_field :address_line2, placeholder: "Address line 2", class: "field" %>
           <%= form.text_field :city, placeholder: "City", class: "field" %>
           <%= form.text_field :state, placeholder: "State", class: "field" %>
           <%= form.text_field :postal_code, placeholder: "Postal code", class: "field" %>
-          <%= form.select :payment_method, options_for_select([["Cash on delivery", "cash_on_delivery"], ["Card on delivery", "card_on_delivery"], ["Online payment gateway ready", "online_gateway"]], @order.payment_method), {}, class: "field" %>
+        </div>
+
+        <div class="order-details-fields" style="margin-top: 2rem;">
+          <h2 style="margin-bottom: 0.5rem;">Order Details</h2>
+          <p style="margin-bottom: 1rem; color: #666;">Choose your preferred delivery time and payment method.</p>
+          <div class="two-column" style="margin-bottom: 1.5rem;">
+            <%= form.select :delivery_window, options_for_select(["8 AM - 11 AM", "11 AM - 2 PM", "2 PM - 5 PM", "5 PM - 8 PM"], @order.delivery_window), { include_blank: "Preferred delivery window" }, class: "field" %>
+            <%= form.select :payment_method, options_for_select([["Cash on delivery", "cash_on_delivery"], ["Card on delivery", "card_on_delivery"], ["Online payment (UPI / cards / netbanking)", "online_gateway"]], @order.payment_method), {}, class: "field" %>
+          </div>
+          <%= form.text_area :notes, rows: 4, placeholder: "Order notes, gate code, or produce preferences (e.g. 'Leave at front gate', 'Only ripe mangoes please')", class: "field" %>
         </div>
 
         <% if buyer_signed_in? && @addresses&.any? %>
@@ -59,20 +72,16 @@
             document.addEventListener('DOMContentLoaded', function() {
               const radios = document.querySelectorAll('.address-radio');
               const newAddressFields = document.getElementById('new-address-fields');
-              const fields = newAddressFields.querySelectorAll('.field');
+              const addressInputs = newAddressFields.querySelectorAll('input, select, textarea');
 
               function toggleFields() {
                 const selected = document.querySelector('.address-radio:checked');
                 if (selected && selected.dataset.type === 'saved') {
                   newAddressFields.style.display = 'none';
-                  fields.forEach(f => {
-                    if (f.name !== 'order[payment_method]' && f.name !== 'order[delivery_window]') {
-                      f.disabled = true;
-                    }
-                  });
+                  addressInputs.forEach(f => f.disabled = true);
                 } else {
                   newAddressFields.style.display = 'grid';
-                  fields.forEach(f => f.disabled = false);
+                  addressInputs.forEach(f => f.disabled = false);
                 }
               }
 
@@ -81,8 +90,7 @@
             });
           </script>
         <% end %>
-        <%= form.text_area :notes, rows: 4, placeholder: "Order notes, gate code, or produce preferences", class: "field" %>
-        <%= form.submit "Place order", class: "button button--primary" %>
+        <%= form.submit "Place order", class: "button button--primary", style: "margin-top: 1rem;" %>
       <% end %>
     </div>
 
@@ -103,7 +111,7 @@
       <div class="summary-row"><span>Discount</span><strong>-<%= money(current_cart.discount_for(@promotion)) %></strong></div>
       <div class="summary-row"><span>Delivery</span><strong><%= money(current_cart.delivery_fee) %></strong></div>
       <div class="summary-row summary-row--total"><span>Total</span><strong><%= money(current_cart.subtotal - current_cart.discount_for(@promotion) + current_cart.delivery_fee) %></strong></div>
-      <p class="summary-note">For live gateway processing, connect Stripe or PayPal credentials in environment variables and replace the placeholder payment option flow.</p>
+      <p class="summary-note">Online payments use an India-first checkout flow with UPI, cards, and netbanking once Razorpay live keys are configured.</p>
     </aside>
   </div>
 </section>

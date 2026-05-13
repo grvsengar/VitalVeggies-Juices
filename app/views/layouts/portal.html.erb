@@ -18,7 +18,7 @@
     <% if portal_signed_in?(:manager) && !@hide_portal_nav %>
       <div class="manager-shell">
         <aside class="manager-sidebar">
-          <%= link_to manager_root_path, class: "manager-brand" do %>
+          <%= link_to manager_dashboard_path, class: "manager-brand" do %>
             <span class="manager-brand__mark">VV</span>
             <span>
               <strong>Vital Manager</strong>
@@ -27,7 +27,7 @@
           <% end %>
 
           <nav class="manager-nav" aria-label="Manager navigation">
-            <%= link_to manager_root_path, class: "manager-nav__link #{'manager-nav__link--active' if current_page?(manager_root_path)}" do %>
+            <%= link_to manager_dashboard_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/dashboard'}" do %>
               <span>Dashboard</span>
             <% end %>
             <%= link_to manager_products_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/products'}" do %>
@@ -38,6 +38,9 @@
             <% end %>
             <%= link_to manager_orders_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/orders'}" do %>
               <span>Orders</span>
+            <% end %>
+            <%= link_to manager_marketing_studio_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/marketing_studio'}" do %>
+              <span>Marketing Studio</span>
             <% end %>
             <%= link_to manager_categories_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/categories'}" do %>
               <span>Categories</span>
@@ -85,7 +88,7 @@
               <%= nav_link_to "Orders", admin_orders_path, class: "portal-nav__link" %>
               <%= button_to "Logout", admin_logout_path, method: :delete, class: "button button--ghost" %>
             <% elsif portal_signed_in?(:manager) %>
-              <%= nav_link_to "Dashboard", manager_root_path, class: "portal-nav__link" %>
+              <%= nav_link_to "Dashboard", manager_dashboard_path, class: "portal-nav__link" %>
               <%= nav_link_to "Inventory", manager_inventory_index_path, class: "portal-nav__link" %>
               <%= nav_link_to "Orders", manager_orders_path, class: "portal-nav__link" %>
               <%= button_to "Logout", manager_logout_path, method: :delete, class: "button button--ghost" %>
@@ -116,6 +119,9 @@
 
         <%= yield %>
       </main>
+    <% end %>
+    <% if portal_signed_in?(:manager) %>
+      <%= render "manager/search/palette" %>
     <% end %>
   </body>
 </html>

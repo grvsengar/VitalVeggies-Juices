@@ -9,7 +9,8 @@ class Avo::Actions::ResendInvitation < Avo::BaseAction
     record.manager? && !record.registered?
   end
 
-  def handle(models:, fields:, current_user:, resource:, **args)
+  def handle(**args)
+    models = Array(args[:records] || args[:models] || args[:model] || args[:record])
     models.each do |user|
       user.send_manager_invitation
     end

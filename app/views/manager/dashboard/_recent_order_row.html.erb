@@ -1,0 +1,8 @@
+<%= link_to manager_order_path(order),
+            id: dom_id(order, :dashboard_order_row),
+            class: ["manager-table__row", ("manager-live-row manager-live-row--new" if local_assigns[:highlight])].compact.join(" ") do %>
+  <strong><%= order.order_number %></strong>
+  <span><%= order.customer_name %></span>
+  <span><%= money(order.total) %></span>
+  <span class="<%= order_status_badge_class(order.status) %>"><%= order.status.humanize %></span>
+<% end %>

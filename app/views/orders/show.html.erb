@@ -5,11 +5,60 @@
     <p class="eyebrow">Order confirmation</p>
     <h1><%= @order.order_number %></h1>
     <p>Status: <strong><%= @order.status.humanize %></strong> | Tracking token: <strong><%= @order.tracking_token %></strong></p>
+    <p><%= order_tracking_summary(@order) %></p>
   </div>
 </section>
 
 <section class="section">
-  <div class="container split-grid">
+  <div class="container tracking-grid">
+    <div class="summary-card tracking-card">
+      <div class="tracking-card__header">
+        <div>
+          <p class="eyebrow">Delivery tracker</p>
+          <h2>From harvest to doorstep</h2>
+        </div>
+        <span class="tracking-progress__pill"><%= order_tracking_progress(@order) %>% live</span>
+      </div>
+
+      <div class="tracking-progress">
+        <div class="tracking-progress__bar">
+          <span style="width: <%= order_tracking_progress(@order) %>%"></span>
+        </div>
+      </div>
+
+      <div class="tracking-steps">
+        <% order_tracking_steps(@order).each_with_index do |step, index| %>
+          <article class="tracking-step tracking-step--<%= step[:state] %>" style="animation-delay: <%= index * 0.08 %>s">
+            <div class="tracking-step__marker"></div>
+            <div>
+              <strong><%= step[:title] %></strong>
+              <p><%= step[:detail] %></p>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="summary-card tracking-map">
+      <p class="eyebrow">Route board</p>
+      <h2>Fresh route snapshot</h2>
+      <div class="tracking-map__canvas">
+        <div class="tracking-map__stop tracking-map__stop--origin">
+          <span></span>
+          <strong>Vital Market</strong>
+          <small><%= business_details[:address] %></small>
+        </div>
+        <div class="tracking-map__line"></div>
+        <div class="tracking-map__stop tracking-map__stop--destination">
+          <span></span>
+          <strong><%= @order.customer_name %></strong>
+          <small><%= @order.city %>, <%= @order.state %></small>
+        </div>
+        <div class="tracking-map__van tracking-map__van--stage-<%= @order.status %>">●</div>
+      </div>
+      <p class="summary-note">Window: <%= @order.delivery_window.presence || "Assigned right after packing" %></p>
+    </div>
+
     <div class="summary-card">
       <h2>Delivery details</h2>
       <p><strong><%= @order.customer_name %></strong></p>
@@ -18,6 +67,9 @@
       <p><%= @order.email %></p>
       <p><strong>Payment:</strong> <%= @order.payment_method.humanize %> / <%= @order.payment_status.humanize %></p>
       <p><strong>Delivery window:</strong> <%= @order.delivery_window.presence || "Assigned after confirmation" %></p>
+      <% if @order.online_gateway? && !@order.paid? && @order.gateway_order_id.present? %>
+        <p><%= link_to "Complete payment", payment_order_path(@order), class: "button button--primary" %></p>
+      <% end %>
     </div>
 
     <div class="summary-card">

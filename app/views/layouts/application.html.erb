@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="view-transition" content="same-origin">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -18,7 +19,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body data-controller="storefront">
     <% unless @hide_site_chrome %>
       <%= turbo_stream_from "inventory" %>
 
@@ -51,6 +52,9 @@
               <%= nav_link_to "Home", root_path %>
               <%= nav_link_to "Shop", products_path %>
               <%= nav_link_to "Cart", cart_path %>
+              <% if current_user&.buyer? %>
+                <%= nav_link_to "Orders", buyer_root_path %>
+              <% end %>
               <%= nav_link_to "Blog", articles_path %>
               <%= nav_link_to "About", about_path %>
               <%= nav_link_to "FAQs", faqs_path %>
@@ -58,6 +62,10 @@
             </nav>
 
             <div class="site-header__actions">
+              <button type="button" class="theme-toggle" data-storefront-target="themeButton" data-action="storefront#toggleTheme" aria-pressed="false">
+                <span class="theme-toggle__icon" aria-hidden="true">◐</span>
+                <span data-theme-label>Dark mode</span>
+              </button>
               <%= link_to "Track Order", track_order_path, class: "button button--ghost" %>
               <% if current_user %>
                 <% if current_user.admin? %>
@@ -67,7 +75,7 @@
                   <%= link_to "Dashboard", manager_root_path, class: "button button--ghost" %>
                   <%= button_to "Log out", manager_logout_path, method: :delete, class: "button button--ghost" %>
                 <% elsif current_user.buyer? %>
-                  <%= link_to "My Account", buyer_root_path, class: "button button--ghost" %>
+                  <%= link_to "My Orders", buyer_root_path, class: "button button--ghost" %>
                   <%= button_to "Log out", buyer_logout_path, method: :delete, class: "button button--ghost" %>
                 <% end %>
               <% else %>
@@ -116,6 +124,9 @@
           </div>
         </div>
       </footer>
+      <% if show_market_pulse? %>
+        <%= render "shared/market_pulse", messages: market_pulse_messages %>
+      <% end %>
     <% end %>
   </body>
 </html>

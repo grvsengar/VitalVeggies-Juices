@@ -1,0 +1,12 @@
+<div id="<%= dom_id(order, :admin_order_row) %>" class="<%= ["portal-table__row", ("manager-live-row manager-live-row--new" if local_assigns[:highlight])].compact.join(" ") %>">
+  <span>
+    <%= link_to order.order_number, admin_order_path(order) %> · <%= order.customer_name %>
+    <% if order.notes.present? %>
+      <span class="order-notes-flag">
+        <%= image_tag "red-flag.png", alt: "Notes" %>
+        <span class="order-notes-tooltip"><%= order.notes %></span>
+      </span>
+    <% end %>
+  </span>
+  <span><%= order.status.humanize %> · <%= order.payment_status.humanize %> · <%= money(order.total) %></span>
+</div>

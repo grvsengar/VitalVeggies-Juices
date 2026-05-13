@@ -1,0 +1,54 @@
+<%= turbo_frame_tag "command_palette_results" do %>
+  <div class="command-palette__results" data-command-palette-target="results">
+    <% if @nav_results.any? %>
+      <div class="command-palette__group">
+        <h3>Navigation</h3>
+        <% @nav_results.each do |nav| %>
+          <%= link_to nav[:url], class: "command-palette__result-item", data: { command_palette_target: "item", turbo_frame: "_top" } do %>
+            <span class="result-icon result-icon--<%= nav[:icon] %>"></span>
+            <span class="result-name"><%= nav[:name] %></span>
+            <span class="result-hint"><%= nav[:hint] || "Go to #{nav[:name]}" %></span>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @orders.any? %>
+      <div class="command-palette__group">
+        <h3>Orders</h3>
+        <% @orders.each do |order| %>
+          <%= link_to manager_order_path(order), class: "command-palette__result-item", data: { command_palette_target: "item", turbo_frame: "_top" } do %>
+            <span class="result-icon result-icon--order"></span>
+            <div class="result-details">
+              <span class="result-name"><%= order.order_number %></span>
+              <span class="result-subtext"><%= order.customer_name %></span>
+            </div>
+            <span class="result-badge"><%= order.status.humanize %></span>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @products.any? %>
+      <div class="command-palette__group">
+        <h3>Products</h3>
+        <% @products.each do |product| %>
+          <%= link_to edit_manager_inventory_path(product), class: "command-palette__result-item", data: { command_palette_target: "item", turbo_frame: "_top" } do %>
+            <span class="result-icon result-icon--product"></span>
+            <div class="result-details">
+              <span class="result-name"><%= product.name %></span>
+              <span class="result-subtext"><%= [product.category&.name, product.sku].compact.join(" · ") %></span>
+            </div>
+            <span class="result-price"><%= money(product.price) %></span>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @nav_results.empty? && @orders.empty? && @products.empty? %>
+      <div class="command-palette__no-results">
+        No results found for "<%= @query %>"
+      </div>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,80 @@
+<% content_for :title, "Pay #{@order.order_number}" %>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">Online payment</p>
+    <h1>Complete payment for <%= @order.order_number %></h1>
+    <p>Pay securely using UPI, cards, netbanking, or supported wallets.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split-grid">
+    <div class="summary-card">
+      <h2>Payment details</h2>
+      <p><strong>Amount:</strong> <%= money(@order.total) %></p>
+      <p><strong>Customer:</strong> <%= @order.customer_name %></p>
+      <p><strong>Email:</strong> <%= @order.email %></p>
+      <p><strong>Phone:</strong> <%= @order.phone %></p>
+      <button id="rzp-pay-button" class="button button--primary">Pay now</button>
+      <p class="summary-note">If the checkout window closes before payment completes, you can reopen it from this page.</p>
+    </div>
+
+    <div class="summary-card">
+      <h2>Order summary</h2>
+      <% @order.order_items.each do |item| %>
+        <div class="summary-row">
+          <span><%= item.product_name %> x <%= item.quantity %></span>
+          <strong><%= money(item.line_total) %></strong>
+        </div>
+      <% end %>
+      <div class="summary-row"><span>Subtotal</span><strong><%= money(@order.subtotal) %></strong></div>
+      <div class="summary-row"><span>Discount</span><strong>-<%= money(@order.discount_total) %></strong></div>
+      <div class="summary-row"><span>Delivery</span><strong><%= money(@order.delivery_fee) %></strong></div>
+      <div class="summary-row summary-row--total"><span>Total</span><strong><%= money(@order.total) %></strong></div>
+    </div>
+  </div>
+</section>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const payButton = document.getElementById("rzp-pay-button");
+    if (!payButton || typeof Razorpay === "undefined") return;
+
+    const options = {
+      key: "<%= j @razorpay_key_id %>",
+      amount: <%= @order.total_in_subunits %>,
+      currency: "INR",
+      name: "Vital Veggies Juices",
+      description: "Order <%= j @order.order_number %>",
+      order_id: "<%= j @order.gateway_order_id %>",
+      callback_url: "<%= payment_callback_orders_url %>",
+      prefill: {
+        name: "<%= j @order.customer_name %>",
+        email: "<%= j @order.email %>",
+        contact: "<%= j @order.gateway_contact %>"
+      },
+      notes: {
+        order_number: "<%= j @order.order_number %>"
+      },
+      theme: {
+        color: "#15803d"
+      },
+      modal: {
+        ondismiss: function () {
+          const notice = document.createElement("p");
+          notice.className = "summary-note";
+          notice.textContent = "Payment was not completed. You can try again from this page.";
+          payButton.insertAdjacentElement("afterend", notice);
+        }
+      }
+    };
+
+    const razorpay = new Razorpay(options);
+    payButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      razorpay.open();
+    });
+  });
+</script>

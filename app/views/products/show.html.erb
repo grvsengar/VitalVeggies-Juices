@@ -11,7 +11,7 @@
 
 <section class="section">
   <div class="container product-detail">
-    <div class="product-detail__media product-detail__media--<%= @product.product_kind %>">
+    <div class="product-detail__media product-detail__media--<%= @product.product_kind %>" style="view-transition-name: <%= product_transition_name(@product) %>">
       <img src="<%= product_image_path(@product) %>" alt="<%= @product.name %>" decoding="async" fetchpriority="high">
     </div>
     <div class="product-detail__content summary-card editorial-panel">

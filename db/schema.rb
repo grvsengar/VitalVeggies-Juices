@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_21_050749) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_30_115500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_21_050749) do
     t.boolean "featured", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "image"
+    t.string "video"
+    t.string "meta_title"
+    t.text "meta_description"
+    t.text "social_caption"
     t.index ["slug"], name: "index_articles_on_slug", unique: true
   end
 
@@ -108,7 +113,15 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_21_050749) do
     t.datetime "updated_at", null: false
     t.bigint "user_id"
     t.bigint "address_id"
+    t.string "payment_provider"
+    t.string "gateway_order_id"
+    t.string "gateway_payment_id"
+    t.string "gateway_signature"
+    t.string "gateway_payment_method"
+    t.datetime "paid_at"
     t.index ["address_id"], name: "index_orders_on_address_id"
+    t.index ["gateway_order_id"], name: "index_orders_on_gateway_order_id", unique: true
+    t.index ["gateway_payment_id"], name: "index_orders_on_gateway_payment_id", unique: true
     t.index ["order_number"], name: "index_orders_on_order_number", unique: true
     t.index ["tracking_token"], name: "index_orders_on_tracking_token", unique: true
     t.index ["user_id"], name: "index_orders_on_user_id"

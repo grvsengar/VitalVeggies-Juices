@@ -1,0 +1,48 @@
+<% analytics = local_assigns[:analytics] || Order.manager_analytics %>
+
+<div id="manager_dashboard_analytics" class="manager-dashboard-charts">
+  <article class="manager-card">
+    <div class="manager-card__header">
+      <div>
+        <p class="manager-chart-card__eyebrow">Daily Order Trends</p>
+        <h2>Orders placed in the last 7 days</h2>
+      </div>
+    </div>
+    <div data-controller="chart"
+         data-chart-type-value="area"
+         data-chart-series-value="<%= json_escape([{ name: "Orders", data: analytics[:order_counts] }].to_json) %>"
+         data-chart-labels-value="<%= json_escape(analytics[:labels].to_json) %>"
+         style="height: 250px;"></div>
+  </article>
+
+  <article class="manager-card">
+    <div class="manager-card__header">
+      <div>
+        <p class="manager-chart-card__eyebrow">Revenue Rhythm</p>
+        <h2>Collected revenue across the same window</h2>
+      </div>
+    </div>
+    <div data-controller="chart"
+         data-chart-type-value="line"
+         data-chart-series-value="<%= json_escape([{ name: "Revenue", data: analytics[:revenue_points] }].to_json) %>"
+         data-chart-labels-value="<%= json_escape(analytics[:labels].to_json) %>"
+         data-chart-prefix-value="₹"
+         data-chart-colors-value='["#3f6f43"]'
+         style="height: 250px;"></div>
+  </article>
+
+  <article class="manager-card">
+    <div class="manager-card__header">
+      <div>
+        <p class="manager-chart-card__eyebrow">Best Sellers</p>
+        <h2>Top products by units sold</h2>
+      </div>
+    </div>
+    <div data-controller="chart"
+         data-chart-type-value="bar"
+         data-chart-series-value="<%= json_escape([{ name: "Units", data: analytics[:top_products].map { |product| product[:quantity] } }].to_json) %>"
+         data-chart-labels-value="<%= json_escape(analytics[:top_products].map { |product| product[:name] }.to_json) %>"
+         data-chart-colors-value='["#f59e0b", "#ffcc73", "#f7b545", "#e09a24", "#bf7f19"]'
+         style="height: 250px;"></div>
+  </article>
+</div>

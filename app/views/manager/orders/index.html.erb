@@ -1,5 +1,7 @@
 <% content_for :title, "Manager Orders" %>
 
+<%= turbo_stream_from "manager_orders" %>
+
 <section class="manager-page">
   <div class="manager-page__header">
     <div>
@@ -32,17 +34,11 @@
         <span>Payment</span>
         <span>Status</span>
       </div>
-      <% @orders.each do |order| %>
-        <%= link_to manager_order_path(order), class: "manager-table__row" do %>
-          <strong><%= order.order_number %></strong>
-          <span><%= order.customer_name %></span>
-          <span><%= order.created_at.strftime("%b %d, %Y") %></span>
-          <span><%= order.order_items.sum(&:quantity) %></span>
-          <span><%= money(order.total) %></span>
-          <span class="<%= payment_badge_class(order.payment_status) %>"><%= order.payment_status.humanize %></span>
-          <span class="<%= order_status_badge_class(order.status) %>"><%= order.status.humanize %></span>
+      <div id="manager_orders_rows" class="manager-table__body">
+        <% @orders.each do |order| %>
+          <%= render "order_row", order: order, highlight: false %>
         <% end %>
-      <% end %>
+      </div>
     </div>
   </article>
 </section>

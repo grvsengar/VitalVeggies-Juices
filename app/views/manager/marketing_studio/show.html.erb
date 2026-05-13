@@ -1,0 +1,891 @@
+<% content_for :title, "Pro Studio · #{@article.title}" %>
+<% content_for :hide_nav, true %>
+
+<div id="pro-studio"
+  data-controller="ffmpeg-studio"
+  data-ffmpeg-studio-video-url-value="<%= manager_marketing_studio_video_path(article_id: @article.id) %>"
+  data-ffmpeg-studio-audio-proxy-url-value="<%= manager_marketing_studio_audio_path %>"
+  data-ffmpeg-studio-article-id-value="<%= @article.id %>">
+
+  <%# ── LOADING OVERLAY ── %>
+  <div class="ps-overlay hidden" data-ffmpeg-studio-target="overlay">
+    <div class="ps-loader">
+      <div class="ps-spin"></div>
+      <p data-ffmpeg-studio-target="progressText">Loading engine…</p>
+      <div class="ps-bar-track"><span class="ps-bar-fill" data-ffmpeg-studio-target="progressBar"></span></div>
+    </div>
+  </div>
+
+  <%# ── TITLEBAR ── %>
+  <header class="ps-head">
+    <div class="ps-head-l">
+      <%= link_to manager_root_path, class:"ps-back" do %>← Back<% end %>
+      <span class="ps-logo">VV Studio</span>
+      <span class="ps-badge ps-badge--ok" data-ffmpeg-studio-target="status" data-state="ready">● Ready</span>
+      <span class="ps-badge ps-badge--save" data-ffmpeg-studio-target="autosaveStatus">Autosaved</span>
+    </div>
+    <div class="ps-head-c"><%= @article.title %></div>
+    <div class="ps-head-r">
+      <button class="ps-btn" data-action="ffmpeg-studio#undo" data-ffmpeg-studio-target="undoBtn">↩ Undo</button>
+      <button class="ps-btn" data-action="ffmpeg-studio#redo" data-ffmpeg-studio-target="redoBtn">↪ Redo</button>
+      <button class="ps-btn ps-btn--go" data-action="ffmpeg-studio#generate" data-ffmpeg-studio-target="generateBtn">⬇ Export</button>
+    </div>
+  </header>
+
+  <%# ── WORKFLOW TABS ── %>
+  <nav class="ps-tabs">
+    <% [["cut","✂ Cut"],["edit","⊞ Edit"],["color","⬡ Color"],["fairlight","♪ Fairlight"],["deliver","▶ Deliver"]].each_with_index do |(id,label),i| %>
+      <button class="ps-tab <%= i==0 ? 'active':'' %>" data-page="<%= id %>"><%= label %></button>
+    <% end %>
+  </nav>
+
+  <%# ── MAIN WORKSPACE ── %>
+  <div class="ps-workspace">
+
+    <%# ─── LEFT PANEL ─── %>
+    <aside class="ps-left">
+      <%# Sub-tabs %>
+      <div class="ps-stabs">
+        <button class="ps-stab active" data-stab="media">Media</button>
+        <button class="ps-stab" data-stab="effects">FX</button>
+        <button class="ps-stab" data-stab="titles">Titles</button>
+        <button class="ps-stab" data-stab="audiofx">Audio</button>
+      </div>
+
+      <%# Media Pool %>
+      <div class="ps-spanel active" data-spanel="media">
+        <div class="ps-clip-card">
+          <div class="ps-clip-thumb">
+            <% if @article.respond_to?(:image) && @article.image? %>
+              <%= image_tag @article.image.url, alt:"src" %>
+            <% else %><div class="ps-thumb-ph">VV</div><% end %>
+          </div>
+          <div>
+            <strong><%= @article.title&.first(26) %></strong>
+            <em data-ffmpeg-studio-target="durationLabel">Detecting…</em>
+          </div>
+        </div>
+        <div class="ps-grid2">
+          <button class="ps-btn2" data-action="ffmpeg-studio#markInPoint">Mark In</button>
+          <button class="ps-btn2" data-action="ffmpeg-studio#markOutPoint">Mark Out</button>
+          <button class="ps-btn2" data-action="ffmpeg-studio#addSegment">Add Clip</button>
+          <button class="ps-btn2" data-action="ffmpeg-studio#clearSegments">Clear All</button>
+          <button class="ps-btn2" data-action="ffmpeg-studio#previewSelection">Preview</button>
+          <button class="ps-btn2" data-action="ffmpeg-studio#toggleLoopPreview" data-ffmpeg-studio-target="loopToggle">Loop: Off</button>
+        </div>
+        <div class="ps-keys">
+          <div>Space — Play / Pause</div>
+          <div>I / O — Mark In / Out</div>
+          <div>S — Add clip to sequence</div>
+          <div>Cmd+Z / Cmd+Y — Undo/Redo</div>
+        </div>
+        <div class="ps-note">FFmpeg loads only on export. Preview is instant via CSS filters.</div>
+      </div>
+
+      <%# Effects %>
+      <div class="ps-spanel" data-spanel="effects">
+        <div class="ps-fx-list">
+          <% [["none","✕ Cut only"],["fade","⧖ Fade dissolve"],["wipeleft","→ Wipe left"],["smoothleft","↞ Smooth push"],["slideup","↑ Slide up"]].each do |val,label| %>
+            <div class="ps-fx-item" data-fx="<%= val %>"><%= label %></div>
+          <% end %>
+        </div>
+        <label class="ps-label">Transition type
+          <select data-ffmpeg-studio-target="transition">
+            <option value="none">Cut only</option>
+            <option value="fade">Fade dissolve</option>
+            <option value="wipeleft">Wipe left</option>
+            <option value="smoothleft">Smooth push</option>
+          </select>
+        </label>
+        <label class="ps-label">Duration · <strong data-ffmpeg-studio-target="transitionDurationLabel">0.4s</strong>
+          <input type="range" min="0.2" max="1.5" step="0.1" value="0.4" data-ffmpeg-studio-target="transitionDuration">
+        </label>
+        <div class="ps-section-title">Resolve FX</div>
+        <% [["Beauty / Skin Retouching","★"],["Noise Reduction","★"],["Lens Blur / Tilt Shift","★"],["Sharpen","★"]].each do |name,tag| %>
+          <div class="ps-fx-item"><%= tag %> <%= name %></div>
+        <% end %>
+      </div>
+
+      <%# Titles %>
+      <div class="ps-spanel" data-spanel="titles">
+        <label class="ps-label">Caption text
+          <textarea rows="3" placeholder="Fresh harvest today" data-ffmpeg-studio-target="textOverlay">Fresh harvest today</textarea>
+        </label>
+        <div class="ps-row2">
+          <label class="ps-label">Style
+            <select data-ffmpeg-studio-target="textStyle">
+              <option value="classic">Classic</option>
+              <option value="glow">Glow promo</option>
+              <option value="badge">Badge</option>
+              <option value="typewriter">Typewriter</option>
+              <option value="minimal">Minimal</option>
+            </select>
+          </label>
+          <label class="ps-label">Position
+            <select data-ffmpeg-studio-target="textPosition">
+              <option value="bottom">Bottom</option>
+              <option value="center">Center</option>
+              <option value="top">Top</option>
+            </select>
+          </label>
+        </div>
+        <label class="ps-label">Size · <strong data-ffmpeg-studio-target="textSizeValue">40px</strong>
+          <input type="range" min="24" max="72" step="2" value="40" data-ffmpeg-studio-target="textSize">
+        </label>
+        <div class="ps-section-title">Quick templates</div>
+        <div class="ps-grid2">
+          <button class="ps-btn2" data-template-text="Fresh from harvest" data-template-style="badge" data-action="ffmpeg-studio#applyTextTemplate">Price card</button>
+          <button class="ps-btn2" data-template-text="Today only — same-day delivery" data-template-style="glow" data-action="ffmpeg-studio#applyTextTemplate">Offer burst</button>
+          <button class="ps-btn2" data-template-text="Locally packed every morning" data-template-style="classic" data-action="ffmpeg-studio#applyTextTemplate">Story</button>
+          <button class="ps-btn2" data-template-text="Clean. Local. Real." data-template-style="typewriter" data-action="ffmpeg-studio#applyTextTemplate">Tag</button>
+        </div>
+        <label class="ps-label">Export filename
+          <input type="text" value="<%= @article.title.to_s.parameterize %>-short" data-ffmpeg-studio-target="exportName">
+        </label>
+        <button class="ps-btn2 ps-btn2--ghost" data-action="ffmpeg-studio#clearAutosave">✕ Clear saved draft</button>
+      </div>
+
+      <%# Audio FX %>
+      <div class="ps-spanel" data-spanel="audiofx">
+        <div class="ps-section-title">Fairlight Audio</div>
+        <label class="ps-label">Mode
+          <select data-ffmpeg-studio-target="audioMode">
+            <option value="original">Keep original</option>
+            <option value="music">Mix + music</option>
+            <option value="mute">Mute output</option>
+          </select>
+        </label>
+        <label class="ps-label">Music source
+          <select data-ffmpeg-studio-target="audioSource">
+            <option value="upload">File upload</option>
+            <option value="online">Online URL</option>
+          </select>
+        </label>
+        <input type="file" accept="audio/*" class="ps-file" data-ffmpeg-studio-target="audioInput">
+        <input type="url" class="ps-url" placeholder="https://…/music.mp3" data-ffmpeg-studio-target="audioUrl">
+        <div class="ps-section-title">Levels</div>
+        <% [["Original level","originalVolume","100"],["Music bed","musicVolume","36"],["Fade in sec","musicFadeIn","0.5"],["Fade out sec","musicFadeOut","0.8"]].each do |label,target,val| %>
+          <label class="ps-slrow"><span><%= label %></span>
+            <input type="range" min="0" max="<%= label.include?('Fade') ? '4' : '100' %>"
+              step="<%= label.include?('Fade') ? '0.1' : '1' %>" value="<%= val %>"
+              data-ffmpeg-studio-target="<%= target %>">
+          </label>
+        <% end %>
+        <div class="ps-section-title">Peak meters</div>
+        <div class="ps-meters">
+          <% %w[L R LS RS C LFE].each_with_index do |ch,i| %>
+            <div class="ps-meter">
+              <div class="ps-meter-bar"><div class="ps-mfill" style="height:<%= [72,58,64,50,68,30][i] %>%"></div></div>
+              <span><%= ch %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </aside>
+
+    <%# ─── CENTER ─── %>
+    <main class="ps-center">
+      <%# Monitor %>
+      <section class="ps-monitor" data-ffmpeg-studio-target="previewStage">
+        <video class="ps-video" playsinline preload="metadata"
+          data-ffmpeg-studio-target="videoPlayer"
+          <%= @article.respond_to?(:image) && @article.image? ? "poster=\"#{@article.image.url}\"" : "" %>
+        ><source src="<%= manager_marketing_studio_video_path(article_id: @article.id) %>" type="video/mp4"></video>
+        <div class="ps-safe ps-safe--a"></div>
+        <div class="ps-safe ps-safe--b"></div>
+        <div class="ps-caption hidden" data-ffmpeg-studio-target="previewText"></div>
+        <span class="ps-monitor-tag">Program Monitor · Realtime</span>
+      </section>
+
+      <%# Transport bar %>
+      <div class="ps-transport">
+        <div class="ps-tr-l">
+          <button class="ps-tb" data-action="ffmpeg-studio#togglePlayback" title="Space">⏵⏸</button>
+          <button class="ps-tb" data-action="ffmpeg-studio#markInPoint" title="I">I</button>
+          <button class="ps-tb" data-action="ffmpeg-studio#markOutPoint" title="O">O</button>
+          <button class="ps-tb" data-action="ffmpeg-studio#splitClip" title="Split at playhead">✂</button>
+          <code class="ps-tc" data-ffmpeg-studio-target="timer">0:00 – 0:15</code>
+          <span class="ps-sel" data-ffmpeg-studio-target="selectionLabel">15s</span>
+        </div>
+        <div class="ps-tr-r">
+          <% [["smart","Smart"],["teaser","Teaser"],["action","Action"],["promo","Promo"],["last","Hook"]].each do |p,l| %>
+            <button class="ps-preset <%= p=='smart' ? 'active':'' %>" data-preset="<%= p %>" data-action="ffmpeg-studio#setPreset"><%= l %></button>
+          <% end %>
+        </div>
+      </div>
+
+      <%# In/Out strip %>
+      <div class="ps-io">
+        <label>In<input type="range" min="0" max="60" step="0.1" value="0" data-ffmpeg-studio-target="startTime"></label>
+        <label>Out<input type="range" min="0" max="60" step="0.1" value="15" data-ffmpeg-studio-target="endTime"></label>
+      </div>
+
+      <%# Timeline %>
+      <div class="ps-timeline">
+        <div class="ps-tl-header">
+          <span class="ps-tl-title">Sequence</span>
+          <span class="ps-tl-stat" data-ffmpeg-studio-target="segmentsCount">1 clip</span>
+          <span class="ps-tl-stat" data-ffmpeg-studio-target="sequenceDuration">0:15</span>
+          <button class="ps-btn2" data-action="ffmpeg-studio#addSegment">+ Add</button>
+          <button class="ps-btn2" data-action="ffmpeg-studio#clearSegments">⌫</button>
+        </div>
+        <div class="ps-tracks">
+          <div class="ps-tlabels">
+            <div>V1</div><div>G1</div><div>A1</div>
+          </div>
+          <div class="ps-tcontent">
+            <div class="ps-track ps-track--v">
+              <div class="ps-ruler">
+                <% 9.times do |i| %><span style="left:<%= i*12.5 %>%"><%= i*5 %>s</span><% end %>
+              </div>
+              <div class="ps-clips" data-ffmpeg-studio-target="segmentsList"></div>
+            </div>
+            <div class="ps-track ps-track--g"><span>Text, stickers, and overlays</span></div>
+            <div class="ps-track ps-track--a"><span>Original audio · music bed mix</span></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <%# ─── RIGHT PANEL ─── %>
+    <aside class="ps-right">
+      <div class="ps-stabs">
+        <button class="ps-stab active" data-stab2="inspector">Inspector</button>
+        <button class="ps-stab" data-stab2="color">Color</button>
+        <button class="ps-stab" data-stab2="scopes">Scopes</button>
+        <button class="ps-stab" data-stab2="deliver">Deliver</button>
+      </div>
+
+      <%# Inspector %>
+      <div class="ps-spanel active" data-spanel2="inspector">
+        <div class="ps-section-title">Output format</div>
+        <label class="ps-label">Format
+          <select data-ffmpeg-studio-target="format">
+            <option value="9:16">Vertical 9:16 (Reel / Short)</option>
+            <option value="1:1">Square 1:1 (Post / Story)</option>
+            <option value="16:9">Landscape 16:9 (YouTube)</option>
+          </select>
+        </label>
+        <label class="ps-label">Frame safety
+          <select data-ffmpeg-studio-target="fitMode">
+            <option value="safe">Smart safe — no crop</option>
+            <option value="crop">Fill canvas — crop edges</option>
+          </select>
+        </label>
+        <label class="ps-label">Compression
+          <select data-ffmpeg-studio-target="compression">
+            <option value="balanced">Balanced quality</option>
+            <option value="small">Smaller file</option>
+            <option value="premium">Broadcast quality</option>
+          </select>
+        </label>
+        <label class="ps-label">Filename
+          <input type="text" value="<%= @article.title.to_s.parameterize %>-short" data-ffmpeg-studio-target="exportName">
+        </label>
+        <div class="ps-section-title">Motion</div>
+        <label class="ps-label">Transition
+          <select data-ffmpeg-studio-target="transition">
+            <option value="none">Cut only</option>
+            <option value="fade">Fade dissolve</option>
+            <option value="wipeleft">Wipe left</option>
+            <option value="smoothleft">Smooth push</option>
+          </select>
+        </label>
+        <label class="ps-label">Duration · <strong data-ffmpeg-studio-target="transitionDurationLabel">0.4s</strong>
+          <input type="range" min="0.2" max="1.5" step="0.1" value="0.4" data-ffmpeg-studio-target="transitionDuration">
+        </label>
+
+        <div class="ps-section-title">Speed / Timing</div>
+        <label class="ps-slrow"><span>Playback speed</span>
+          <input type="range" min="0.1" max="2.0" step="0.1" value="1.0" data-ffmpeg-studio-target="playbackSpeed">
+        </label>
+        <label class="ps-label" style="text-align: right; margin-top: -3px;"><strong data-ffmpeg-studio-target="playbackSpeedLabel">1.0x</strong></label>
+
+        <div class="ps-section-title">Transform / Crop</div>
+        <label class="ps-slrow"><span>Zoom / Scale</span>
+          <input type="range" min="1.0" max="3.0" step="0.05" value="1.0" data-ffmpeg-studio-target="zoom">
+        </label>
+        <label class="ps-label" style="text-align: right; margin-top: -3px;"><strong data-ffmpeg-studio-target="zoomLabel">1.00x</strong></label>
+        
+        <label class="ps-slrow"><span>X Offset</span>
+          <input type="range" min="-100" max="100" step="1" value="0" data-ffmpeg-studio-target="offsetX">
+        </label>
+        <label class="ps-label" style="text-align: right; margin-top: -3px;"><strong data-ffmpeg-studio-target="offsetXLabel">0%</strong></label>
+        
+        <label class="ps-slrow"><span>Y Offset</span>
+          <input type="range" min="-100" max="100" step="1" value="0" data-ffmpeg-studio-target="offsetY">
+        </label>
+        <label class="ps-label" style="text-align: right; margin-top: -3px;"><strong data-ffmpeg-studio-target="offsetYLabel">0%</strong></label>
+        <div class="ps-error hidden" data-ffmpeg-studio-target="errorPanel">
+          <p data-ffmpeg-studio-target="errorText"></p>
+          <button class="ps-btn2 ps-btn2--danger" data-action="ffmpeg-studio#retry">Retry engine</button>
+        </div>
+        <div class="ps-output hidden" data-ffmpeg-studio-target="outputSection">
+          <video controls class="ps-outvid" data-ffmpeg-studio-target="outputVideo"></video>
+          <a href="#" class="ps-dl" data-ffmpeg-studio-target="downloadBtn">⬇ Download MP4</a>
+        </div>
+      </div>
+
+      <%# Color tab %>
+      <div class="ps-spanel" data-spanel2="color">
+        <div class="ps-section-title">Look preset</div>
+        <label class="ps-label">
+          <select data-ffmpeg-studio-target="effectPreset">
+            <option value="clean">Clean — natural</option>
+            <option value="cinematic">Cinematic — film</option>
+            <option value="vivid">Vivid — commerce</option>
+            <option value="dreamy">Dreamy — soft</option>
+            <option value="noir">Noir — monochrome</option>
+          </select>
+        </label>
+        <div class="ps-section-title">Color wheels</div>
+        <div class="ps-wheels">
+          <div class="ps-wheel"><div class="ps-wring ps-wring--lift"></div><span>Lift</span></div>
+          <div class="ps-wheel"><div class="ps-wring ps-wring--gamma"></div><span>Gamma</span></div>
+          <div class="ps-wheel"><div class="ps-wring ps-wring--gain"></div><span>Gain</span></div>
+        </div>
+        <div class="ps-section-title">Primaries</div>
+        <% [["Brightness","brightness","-60","60","0"],["Contrast","contrast","-60","60","0"],["Saturation","saturation","-60","60","0"],["Warmth","warmth","-60","60","0"],["Blur","blur","0","10","0"]].each do |label,t,mn,mx,v| %>
+          <label class="ps-slrow"><span><%= label %></span>
+            <input type="range" min="<%= mn %>" max="<%= mx %>" step="<%= t=='blur' ? '0.5':'1' %>" value="<%= v %>" data-ffmpeg-studio-target="<%= t %>">
+          </label>
+        <% end %>
+      </div>
+
+      <%# Scopes tab %>
+      <div class="ps-spanel" data-spanel2="scopes">
+        <div class="ps-scope-tabs">
+          <% [["waveform","Wave"],["histogram","Histo"],["parade","RGB"],["vectorscope","Vector"]].each_with_index do |(sc,lb),i| %>
+            <button class="ps-stab2 <%= i==0 ? 'active':'' %>" data-scope="<%= sc %>"><%= lb %></button>
+          <% end %>
+        </div>
+        <canvas id="ps-scope" width="276" height="150" class="ps-canvas"></canvas>
+        <div class="ps-section-title">LUT Management</div>
+        <label class="ps-label">LUT preset
+          <select id="ps-lut">
+            <option value="none">No LUT</option>
+            <option value="film_warm">Film warm</option>
+            <option value="natural_flat">Natural flat</option>
+            <option value="cool_bleach">Cool bleach</option>
+            <option value="golden_hour">Golden hour</option>
+            <option value="teal_orange">Teal & orange</option>
+          </select>
+        </label>
+        <label class="ps-label">Strength · <strong id="ps-lut-strength-val">85%</strong>
+          <input type="range" min="0" max="100" value="85" id="ps-lut-strength">
+        </label>
+        <div class="ps-section-title">HDR / SDR</div>
+        <label class="ps-label">Color space
+          <select id="ps-colorspace">
+            <option>Rec.709 (SDR)</option>
+            <option>Rec.2020 (HDR)</option>
+            <option>DCI-P3 (Cinema)</option>
+          </select>
+        </label>
+        <label class="ps-label">Gamma
+          <select id="ps-gamma">
+            <option>BT.1886</option>
+            <option>Dolby Vision</option>
+            <option>PQ ST.2084</option>
+            <option>HLG</option>
+          </select>
+        </label>
+      </div>
+
+      <%# Deliver tab %>
+      <div class="ps-spanel" data-spanel2="deliver">
+        <div class="ps-section-title">Platform presets</div>
+        <label class="ps-label">Platform
+          <select id="ps-platform">
+            <option value="">Custom</option>
+            <option value="tiktok">TikTok (9:16 · 30s)</option>
+            <option value="reel">Instagram Reel</option>
+            <option value="ytshort">YouTube Short</option>
+            <option value="twitter">Twitter / X</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="dcp">DCP Cinema</option>
+          </select>
+        </label>
+        <div class="ps-section-title">Codec</div>
+        <label class="ps-label">Video codec
+          <select id="ps-codec">
+            <option>H.264 (MP4) — universal</option>
+            <option>H.265 (MP4) — 50% smaller</option>
+            <option>ProRes 422 — editing</option>
+          </select>
+        </label>
+        <label class="ps-label">Quality
+          <select data-ffmpeg-studio-target="compression">
+            <option value="balanced">Balanced</option>
+            <option value="small">Web optimised</option>
+            <option value="premium">Broadcast</option>
+          </select>
+        </label>
+        <label class="ps-label">Format
+          <select data-ffmpeg-studio-target="format">
+            <option value="9:16">Vertical 9:16</option>
+            <option value="1:1">Square 1:1</option>
+            <option value="16:9">Landscape 16:9</option>
+          </select>
+        </label>
+        <label class="ps-label">Filename
+          <input type="text" data-ffmpeg-studio-target="exportName" value="<%= @article.title.to_s.parameterize %>-short">
+        </label>
+        <div class="ps-deliver-btns">
+          <button class="ps-primary" data-action="ffmpeg-studio#generate" data-ffmpeg-studio-target="generateBtn">⬇ Quick Export</button>
+          <button class="ps-btn2" data-action="ffmpeg-studio#exportFrame">🖼 Cover Frame</button>
+          <button class="ps-btn2 ps-btn2--ghost" data-action="ffmpeg-studio#retry">Reconnect Engine</button>
+        </div>
+      </div>
+    </aside>
+  </div><%# /workspace %>
+</div><%# /pro-studio %>
+
+<style>
+/* ── Reset & Tokens ─────────────────────────── */
+#pro-studio{--bg:#12151a;--bg2:#1a1e25;--bg3:#222830;--bg4:#2b323c;--ln:rgba(255,255,255,.07);--tx:#dde3eb;--mu:#8494a2;--ac:#5fcf96;--bl:#6baaff;--wn:#ffa355;--er:#ff7070;font:13px/1.4 system-ui,sans-serif;color:var(--tx)}
+#pro-studio *,#pro-studio *::before,#pro-studio *::after{box-sizing:border-box;margin:0;padding:0}
+.hidden{display:none!important}
+
+/* ── Shell — viewport-locked ────────────────── */
+#pro-studio{
+  position:fixed;inset:0;z-index:9000;
+  display:grid;
+  grid-template-rows:36px 32px minmax(0,1fr);
+  background:var(--bg);overflow:hidden;
+}
+
+/* ── Overlay ────────────────────────────────── */
+.ps-overlay{position:fixed;inset:0;z-index:999;display:grid;place-items:center;background:rgba(5,8,13,.82);backdrop-filter:blur(16px)}
+.ps-loader{width:min(320px,88vw);padding:1.4rem;border-radius:14px;border:1px solid var(--ln);background:var(--bg3);text-align:center}
+.ps-spin{width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.1);border-top-color:var(--ac);animation:spin .8s linear infinite;margin:0 auto .8rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ps-bar-track{height:5px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:.7rem}
+.ps-bar-fill{display:block;height:100%;background:var(--ac);width:10%;transition:width .3s}
+
+/* ── Titlebar ───────────────────────────────── */
+.ps-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 .75rem;gap:.5rem;background:#0d1014;border-bottom:1px solid var(--ln)}
+.ps-head-l,.ps-head-r{display:flex;align-items:center;gap:.45rem}
+.ps-head-r{justify-content:flex-end}
+.ps-head-c{font-size:13px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx)}
+.ps-back{color:var(--mu);text-decoration:none;font-size:12px}
+.ps-back:hover{color:var(--tx)}
+.ps-logo{font-weight:800;color:var(--ac);font-size:13px}
+.ps-badge{display:inline-flex;align-items:center;padding:1px 7px;border-radius:99px;font-size:10px;border:1px solid transparent}
+.ps-badge--ok{background:rgba(95,207,150,.14);border-color:rgba(95,207,150,.28);color:#b9f7d8}
+.ps-badge--save{background:rgba(107,170,255,.1);border-color:rgba(107,170,255,.22);color:#d4e8ff}
+.ps-badge[data-state="busy"]{background:rgba(255,163,85,.14);border-color:rgba(255,163,85,.28);color:#ffe0b3}
+.ps-badge[data-state="error"]{background:rgba(255,112,112,.14);border-color:rgba(255,112,112,.28);color:#ffd0d0}
+.ps-btn{padding:3px 10px;border-radius:6px;border:1px solid var(--ln);background:var(--bg3);color:var(--tx);cursor:pointer;font-size:12px}
+.ps-btn:hover{background:var(--bg4)}
+.ps-btn--go{background:linear-gradient(135deg,#2d8f5e,var(--ac));color:#071e12;border-color:transparent;font-weight:700}
+.ps-btn--go:disabled{opacity:.55;cursor:wait}
+
+/* ── Workflow tabs ──────────────────────────── */
+.ps-tabs{display:flex;align-items:center;gap:1px;padding:0 .5rem;background:#0f1216;border-bottom:1px solid var(--ln)}
+.ps-tab{padding:5px 18px;border:none;background:transparent;color:var(--mu);cursor:pointer;font-size:12px;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.ps-tab:hover{color:var(--tx)}
+.ps-tab.active{color:var(--ac);border-bottom-color:var(--ac)}
+
+/* ── Workspace grid ─────────────────────────── */
+.ps-workspace{display:grid;grid-template-columns:264px minmax(0,1fr) 284px;min-height:0;overflow:hidden}
+
+/* ── Left / Right panels ────────────────────── */
+.ps-left,.ps-right{display:flex;flex-direction:column;background:var(--bg2);min-height:0;overflow:hidden}
+.ps-left{border-right:1px solid var(--ln)}
+.ps-right{border-left:1px solid var(--ln)}
+
+/* ── Sub-tabs (left & right) ────────────────── */
+.ps-stabs{display:flex;gap:1px;flex-shrink:0;padding:4px 6px;background:var(--bg);border-bottom:1px solid var(--ln)}
+.ps-stab{padding:3px 9px;border-radius:5px;border:none;background:transparent;color:var(--mu);cursor:pointer;font-size:11px}
+.ps-stab:hover{color:var(--tx)}
+.ps-stab.active{background:rgba(95,207,150,.13);color:var(--ac)}
+
+/* ── Sub panels ─────────────────────────────── */
+.ps-spanel{display:none;flex-direction:column;gap:7px;padding:9px;overflow-y:auto;flex:1;min-height:0}
+.ps-spanel.active{display:flex}
+
+/* ── Left panel components ──────────────────── */
+.ps-clip-card{display:grid;grid-template-columns:72px 1fr;gap:8px;align-items:start;padding:2px 0 4px}
+.ps-clip-thumb{height:54px;border-radius:7px;overflow:hidden;border:1px solid var(--ln);background:#06080e;position:relative}
+.ps-clip-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.ps-thumb-ph{width:100%;height:100%;display:grid;place-items:center;font-weight:800;font-size:1.2rem;color:var(--ac)}
+.ps-clip-card strong{display:block;font-size:12px;margin-bottom:3px}
+.ps-clip-card em{font-size:11px;font-style:normal;color:var(--mu)}
+.ps-grid2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ps-keys{display:flex;flex-direction:column;gap:3px}
+.ps-keys>div{padding:3px 7px;border-radius:5px;background:rgba(0,0,0,.2);color:var(--mu);font-size:10px;font-family:monospace}
+.ps-note{padding:7px 9px;border-radius:8px;background:rgba(95,207,150,.06);border:1px solid rgba(95,207,150,.14);color:#a8dfc2;font-size:11px;line-height:1.5}
+.ps-fx-list{display:flex;flex-direction:column;gap:3px}
+.ps-fx-item{padding:6px 9px;border-radius:7px;border:1px solid var(--ln);cursor:pointer;font-size:12px}
+.ps-fx-item:hover,.ps-fx-item.active{border-color:rgba(95,207,150,.4);color:var(--ac);background:rgba(95,207,150,.07)}
+.ps-row2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ps-section-title{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);padding-top:4px;border-top:1px solid var(--ln)}
+.ps-label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--mu)}
+.ps-label input[type=text],.ps-label select,.ps-label textarea,.ps-file,.ps-url{width:100%;padding:5px 8px;border-radius:7px;border:1px solid var(--ln);background:#0d1016;color:var(--tx);font:inherit;font-size:12px}
+.ps-label textarea{resize:none;min-height:56px}
+.ps-label input[type=range]{width:100%;appearance:none;height:5px;border-radius:99px;background:linear-gradient(90deg,var(--ac),var(--bl));padding:0;border:none}
+.ps-label input[type=range]::-webkit-slider-thumb{appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;cursor:ew-resize;border:2px solid rgba(255,255,255,.6)}
+.ps-label strong{color:var(--tx)}
+.ps-file,.ps-url{margin-top:2px}
+.ps-slrow{display:grid;grid-template-columns:90px 1fr;align-items:center;gap:6px}
+.ps-slrow span{font-size:11px;color:var(--mu)}
+.ps-slrow input[type=range]{appearance:none;height:5px;border-radius:99px;background:linear-gradient(90deg,var(--ac),var(--bl));border:none;cursor:ew-resize}
+.ps-slrow input[type=range]::-webkit-slider-thumb{appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;cursor:ew-resize}
+.ps-btn2{padding:5px 8px;border:1px solid var(--ln);border-radius:7px;background:var(--bg3);color:var(--tx);cursor:pointer;font-size:11px;text-align:center}
+.ps-btn2:hover{background:var(--bg4);border-color:rgba(95,207,150,.3)}
+.ps-btn2--ghost{background:transparent}
+.ps-btn2--danger{color:var(--er);border-color:rgba(255,112,112,.3)}
+
+/* ── Peak meters ────────────────────────────── */
+.ps-meters{display:flex;gap:5px;height:70px;align-items:flex-end}
+.ps-meter{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
+.ps-meter-bar{flex:1;width:100%;background:#07090d;border-radius:4px;overflow:hidden;display:flex;align-items:flex-end}
+.ps-mfill{width:100%;background:linear-gradient(0deg,#5fcf96 0%,#ffc55c 65%,#ff5c5c 90%);border-radius:3px 3px 0 0}
+.ps-meter span{font-size:9px;font-weight:700;color:var(--mu)}
+
+/* ── Color wheels ───────────────────────────── */
+.ps-wheels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+.ps-wheel span{font-size:10px;color:var(--mu);display:block;margin-top:4px}
+.ps-wring{width:100%;aspect-ratio:1;border-radius:50%;border:2px solid var(--ln)}
+.ps-wring--lift{background:radial-gradient(circle,rgba(60,80,200,.5),rgba(20,30,100,.7))}
+.ps-wring--gamma{background:radial-gradient(circle,rgba(60,180,80,.5),rgba(20,80,30,.7))}
+.ps-wring--gain{background:radial-gradient(circle,rgba(240,200,60,.5),rgba(100,80,10,.7))}
+
+/* ── Scope canvas ───────────────────────────── */
+.ps-scope-tabs{display:flex;gap:3px;flex-shrink:0}
+.ps-stab2{padding:3px 8px;border:1px solid var(--ln);border-radius:5px;background:transparent;color:var(--mu);cursor:pointer;font-size:10px}
+.ps-stab2.active{background:rgba(95,207,150,.13);color:var(--ac);border-color:rgba(95,207,150,.3)}
+.ps-canvas{width:100%;border-radius:8px;border:1px solid var(--ln);display:block}
+
+/* ── Deliver panel ──────────────────────────── */
+.ps-deliver-btns{display:flex;flex-direction:column;gap:5px}
+.ps-primary{padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#2d8f5e,var(--ac));color:#071e12;font-weight:700;font-size:13px;cursor:pointer;width:100%}
+.ps-primary:disabled{opacity:.55;cursor:wait}
+
+/* ── Error / Output ─────────────────────────── */
+.ps-error{padding:8px;border-radius:8px;border:1px solid rgba(255,112,112,.28);background:rgba(255,112,112,.1)}
+.ps-error p{color:#ffd0d0;font-size:11px;line-height:1.5;margin-bottom:5px}
+.ps-output{display:flex;flex-direction:column;gap:5px}
+.ps-outvid{width:100%;border-radius:8px;border:1px solid var(--ln);background:#02040a;display:block}
+.ps-dl{display:flex;align-items:center;justify-content:center;padding:6px;border-radius:8px;border:1px solid rgba(95,207,150,.3);background:rgba(95,207,150,.09);color:#b9f7d8;text-decoration:none;font-size:12px}
+
+/* ── Center ─────────────────────────────────── */
+.ps-center{display:grid;grid-template-rows:minmax(0,1fr) auto auto 190px;min-height:0;overflow:hidden;background:#0f1317}
+
+/* ── Monitor ────────────────────────────────── */
+.ps-monitor{position:relative;overflow:hidden;background:#050810;min-height:0}
+.ps-video{width:100%;height:100%;object-fit:contain;display:block}
+.ps-safe{position:absolute;pointer-events:none;border:1px dashed rgba(255,255,255,.12);border-radius:5px}
+.ps-safe--a{inset:8%}
+.ps-safe--b{inset:16%;border-color:rgba(95,207,150,.2)}
+.ps-caption{position:absolute;left:50%;transform:translateX(-50%);bottom:8%;max-width:80%;padding:.7rem 1.1rem;border-radius:12px;background:rgba(8,10,14,.78);border:1px solid rgba(255,255,255,.1);color:#fff;text-align:center;font-size:1.5rem;font-weight:700;z-index:3;pointer-events:none}
+.ps-caption[data-position="top"]{top:8%;bottom:auto}
+.ps-caption[data-position="center"]{top:50%;bottom:auto;transform:translate(-50%,-50%)}
+.ps-monitor-tag{position:absolute;top:7px;right:8px;padding:2px 8px;border-radius:99px;font-size:10px;background:rgba(0,0,0,.55);border:1px solid var(--ln);color:#bbb;z-index:2}
+
+/* ── Transport ──────────────────────────────── */
+.ps-transport{display:flex;justify-content:space-between;align-items:center;padding:5px 9px;gap:6px;background:#181d23;border-top:1px solid var(--ln);flex-shrink:0}
+.ps-tr-l,.ps-tr-r{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ps-tb{min-width:30px;height:26px;padding:0 7px;border-radius:6px;border:1px solid var(--ln);background:var(--bg3);color:var(--tx);cursor:pointer;font-size:12px}
+.ps-tb:hover{background:var(--bg4)}
+.ps-tc{padding:2px 7px;border-radius:5px;background:#08090c;border:1px solid var(--ln);font-family:monospace;font-size:11px;color:#eaeef3}
+.ps-sel{font-size:11px;color:var(--mu);padding:2px 6px;background:rgba(255,255,255,.04);border-radius:5px}
+.ps-preset{padding:2px 8px;border-radius:99px;border:1px solid var(--ln);background:transparent;color:var(--mu);cursor:pointer;font-size:11px}
+.ps-preset:hover,.ps-preset.active{border-color:rgba(95,207,150,.4);color:#b9f7d8;background:rgba(95,207,150,.09)}
+
+/* ── In/Out strip ───────────────────────────── */
+.ps-io{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:5px 9px;background:#1d2229;border-top:1px solid var(--ln);flex-shrink:0}
+.ps-io label{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mu)}
+.ps-io input[type=range]{flex:1;appearance:none;height:5px;border-radius:99px;background:linear-gradient(90deg,rgba(95,207,150,.65),rgba(107,170,255,.65));padding:0;border:none}
+.ps-io input[type=range]::-webkit-slider-thumb{appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;cursor:ew-resize}
+
+/* ── Timeline ───────────────────────────────── */
+.ps-timeline{display:flex;flex-direction:column;background:#161b21;border-top:1px solid var(--ln);min-height:0;overflow:hidden}
+.ps-tl-header{display:flex;align-items:center;gap:6px;padding:4px 8px;background:#13181e;border-bottom:1px solid var(--ln);flex-shrink:0}
+.ps-tl-title{font-size:11px;font-weight:700;color:var(--mu);margin-right:4px}
+.ps-tl-stat{font-size:11px;color:var(--tx);background:rgba(255,255,255,.05);border-radius:4px;padding:1px 6px}
+.ps-tracks{display:grid;grid-template-columns:40px 1fr;flex:1;min-height:0;overflow:hidden}
+.ps-tlabels{display:flex;flex-direction:column;background:#111518;border-right:1px solid var(--ln)}
+.ps-tlabels>div{display:grid;place-items:center;flex:1;font-size:10px;font-weight:700;color:var(--mu);border-bottom:1px solid var(--ln)}
+.ps-tcontent{display:flex;flex-direction:column;min-height:0}
+.ps-track{position:relative;flex:1;border-bottom:1px solid var(--ln);overflow:hidden}
+.ps-track--v{flex:2}
+.ps-track--g,.ps-track--a{display:grid;place-items:center;font-size:11px;color:var(--mu)}
+.ps-ruler{position:absolute;top:0;left:0;right:0;height:16px;background:rgba(0,0,0,.28);border-bottom:1px solid var(--ln)}
+.ps-ruler span{position:absolute;top:2px;transform:translateX(-50%);font-size:9px;color:var(--mu)}
+.ps-clips{position:absolute;inset:16px 0 0;padding:4px 5px;display:flex;flex-direction:column;gap:3px;overflow:auto}
+
+/* ── Segment cards ──────────────────────────── */
+.studio-segment-card{display:grid;grid-template-columns:32px 1fr auto;gap:5px;align-items:center;padding:5px 7px;border-radius:7px;border:1px solid rgba(107,170,255,.2);background:linear-gradient(135deg,rgba(50,90,155,.8),rgba(28,55,100,.9));min-height:38px}
+.studio-segment-index{display:grid;place-items:center;background:rgba(0,0,0,.3);border-radius:5px;height:100%;font-weight:800;font-size:11px}
+.studio-segment-copy strong{display:block;font-size:11px;margin-bottom:1px}
+.studio-segment-copy span{display:block;color:var(--mu);font-size:10px}
+.studio-segment-actions{display:flex;gap:3px}
+.studio-segment-actions button{border:1px solid rgba(255,255,255,.1);border-radius:5px;background:rgba(0,0,0,.3);color:var(--tx);padding:2px 5px;cursor:pointer;font-size:10px}
+.studio-segment-actions button:disabled{opacity:.38;cursor:not-allowed}
+</style>
+
+<script>
+(function(){
+  /* Page tab switching — left sub-tabs + right sub-tabs change based on page */
+  const studio = document.getElementById('pro-studio');
+
+  /* Generic sub-tab switcher */
+  function bindStabs(tabAttr, panelAttr, root) {
+    root.querySelectorAll('[' + tabAttr + ']').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const group = btn.closest('.ps-left, .ps-right');
+        if (!group) return;
+        group.querySelectorAll('[' + tabAttr + ']').forEach(b => b.classList.remove('active'));
+        group.querySelectorAll('[' + panelAttr + ']').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const target = group.querySelector('[' + panelAttr + '="' + btn.dataset[tabAttr.replace('data-','').replace(/-([a-z])/g,(_,c)=>c.toUpperCase())] + '"]');
+        if (target) target.classList.add('active');
+      });
+    });
+  }
+
+  /* Left: data-stab / data-spanel */
+  studio.querySelectorAll('.ps-stab[data-stab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const panel = btn.closest('.ps-left, .ps-right');
+      panel.querySelectorAll('.ps-stab[data-stab]').forEach(b => b.classList.remove('active'));
+      panel.querySelectorAll('.ps-spanel[data-spanel]').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const t = panel.querySelector('.ps-spanel[data-spanel="' + btn.dataset.stab + '"]');
+      if (t) t.classList.add('active');
+    });
+  });
+
+  /* Right: data-stab2 / data-spanel2 */
+  studio.querySelectorAll('.ps-stab[data-stab2]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const panel = btn.closest('.ps-left, .ps-right');
+      panel.querySelectorAll('.ps-stab[data-stab2]').forEach(b => b.classList.remove('active'));
+      panel.querySelectorAll('.ps-spanel[data-spanel2]').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const t = panel.querySelector('.ps-spanel[data-spanel2="' + btn.dataset.stab2 + '"]');
+      if (t) t.classList.add('active');
+    });
+  });
+
+  /* Page tabs */
+  studio.querySelectorAll('.ps-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      studio.querySelectorAll('.ps-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  /* Preset buttons active state */
+  studio.querySelectorAll('.ps-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      studio.querySelectorAll('.ps-preset').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  /* FX item → transition select */
+  studio.querySelectorAll('.ps-fx-item[data-fx]').forEach(el => {
+    el.addEventListener('click', () => {
+      const sel = studio.querySelector('[data-ffmpeg-studio-target="transition"]');
+      if (sel) { sel.value = el.dataset.fx; sel.dispatchEvent(new Event('change',{bubbles:true})); }
+      studio.querySelectorAll('.ps-fx-item').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+    });
+  });
+
+  /* Platform preset → auto-fill */
+  const platSel = document.getElementById('ps-platform');
+  if (platSel) {
+    platSel.addEventListener('change', () => {
+      const map = { tiktok:{f:'9:16',q:'balanced'}, reel:{f:'9:16',q:'balanced'}, ytshort:{f:'9:16',q:'premium'}, twitter:{f:'16:9',q:'small'}, linkedin:{f:'16:9',q:'balanced'} };
+      const p = map[platSel.value];
+      if (!p) return;
+      ['format','compression'].forEach((t,i) => {
+        const el = studio.querySelector('[data-ffmpeg-studio-target="' + t + '"]');
+        if (el) { el.value = [p.f, p.q][i]; el.dispatchEvent(new Event('change',{bubbles:true})); }
+      });
+    });
+  }
+
+  /* LUT strength label */
+  const lutStr = document.getElementById('ps-lut-strength');
+  const lutVal = document.getElementById('ps-lut-strength-val');
+  if (lutStr && lutVal) lutStr.addEventListener('input', () => { lutVal.textContent = lutStr.value + '%'; });
+
+  /* Scope canvas & Live Sampling */
+  const canvas = document.getElementById('ps-scope');
+  const vid = document.querySelector('.ps-outvid');
+  let scope = 'waveform';
+  let scopeRaf;
+
+  const tempC = document.createElement('canvas');
+  tempC.width = 120; tempC.height = 68;
+  let tCtx = null;
+  if (canvas) tCtx = tempC.getContext('2d', { willReadFrequently: true });
+  
+  function drawScope() {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (scopeRaf) cancelAnimationFrame(scopeRaf);
+
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#070a0f';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
+    [.25,.5,.75].forEach(r=>{ctx.beginPath();ctx.moveTo(0,H*r);ctx.lineTo(W,H*r);ctx.stroke();});
+
+    let imgData = null;
+    if (vid && vid.readyState >= 2) {
+      try {
+        tCtx.drawImage(vid, 0, 0, tempC.width, tempC.height);
+        imgData = tCtx.getImageData(0, 0, tempC.width, tempC.height).data;
+      } catch(e) {}
+    }
+
+    if (scope === 'waveform') {
+      ctx.fillStyle = 'rgba(95,207,150,0.6)';
+      if (imgData) {
+        for (let x=0; x<tempC.width; x++) {
+          const px = (x / tempC.width) * W;
+          for (let y=0; y<tempC.height; y++) {
+            const i = (y * tempC.width + x) * 4;
+            const luma = (imgData[i] + imgData[i+1] + imgData[i+2]) / 3;
+            ctx.fillRect(px, H - (luma/255)*H, Math.max(1, W/tempC.width), 1.5);
+          }
+        }
+      } else {
+        // Fallback
+        ctx.strokeStyle = 'rgba(95,207,150,.9)'; ctx.beginPath();
+        for (let x=0;x<W;x++) { const y = H/2+Math.sin(x*.06)*H*.3; x===0?ctx.moveTo(x,y):ctx.lineTo(x,y); }
+        ctx.stroke();
+      }
+    } else if (scope === 'histogram') {
+      const cols=['rgba(220,60,60,.7)','rgba(60,200,100,.7)','rgba(80,140,255,.7)'];
+      if (imgData) {
+        const bins = [new Array(60).fill(0), new Array(60).fill(0), new Array(60).fill(0)];
+        let maxCount = 1;
+        for (let i=0; i<imgData.length; i+=4) {
+          [0,1,2].forEach(c => {
+            const bin = Math.floor((imgData[i+c]/255)*59);
+            bins[c][bin]++;
+            if (bins[c][bin] > maxCount) maxCount = bins[c][bin];
+          });
+        }
+        cols.forEach((c,ci)=>{
+          ctx.fillStyle=c;
+          for(let i=0;i<60;i++){
+            const bh = (bins[ci][i]/maxCount)*H*0.9 + 2;
+            ctx.fillRect(i*(W/60),H-bh,W/60-1,bh);
+          }
+        });
+      }
+    } else if (scope === 'parade') {
+      const cols = ['rgba(205,60,60,.7)','rgba(60,195,90,.7)','rgba(70,130,255,.7)'];
+      if (imgData) {
+        const w3 = W/3;
+        cols.forEach((c,ci)=>{
+          ctx.fillStyle=c;
+          for (let x=0; x<tempC.width; x+=2) {
+            const px = (x / tempC.width) * w3 + (ci*w3);
+            for (let y=0; y<tempC.height; y+=2) {
+              const i = (y * tempC.width + x) * 4;
+              ctx.fillRect(px, H - (imgData[i+ci]/255)*H, Math.max(1, w3/tempC.width * 2), 2);
+            }
+          }
+        });
+      }
+    } else {
+      const cx=W/2,cy=H/2,r=Math.min(W,H)*.43;
+      [1,.5,.25].forEach(f=>{ctx.beginPath();ctx.arc(cx,cy,r*f,0,Math.PI*2);ctx.stroke();});
+      if (imgData) {
+        ctx.fillStyle=`hsla(180, 75%, 60%, 0.4)`;
+        for(let i=0; i<imgData.length; i+=8) { // skip pixels for speed
+          const r = imgData[i], g = imgData[i+1], b = imgData[i+2];
+          // Simple UV approximation
+          const u = -0.14713 * r - 0.28886 * g + 0.436 * b;
+          const v = 0.615 * r - 0.51499 * g - 0.10001 * b;
+          ctx.fillRect(cx + u*1.5, cy - v*1.5, 2, 2);
+        }
+      }
+    }
+
+    if (vid && !vid.paused) {
+      scopeRaf = requestAnimationFrame(drawScope);
+    }
+  }
+
+  if (canvas) drawScope();
+  studio.querySelectorAll('.ps-stab2[data-scope]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      studio.querySelectorAll('.ps-stab2').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      scope = btn.dataset.scope;
+      if (canvas) drawScope();
+    });
+  });
+
+  if (vid && canvas) {
+    vid.addEventListener('play', () => { if (canvas) drawScope(); });
+    vid.addEventListener('seeked', () => { if (canvas) drawScope(); });
+  }
+
+  /* Live Audio Meters */
+  let audioCtx, analyser, dataArray;
+  let audioRaf;
+  const meters = Array.from(studio.querySelectorAll('.ps-meter-fill'));
+
+  function updateMeters() {
+    if (!audioCtx) return;
+    if (audioRaf) cancelAnimationFrame(audioRaf);
+
+    analyser.getByteFrequencyData(dataArray);
+    let avg = 0;
+    for (let i=0; i<dataArray.length; i++) avg += dataArray[i];
+    avg /= dataArray.length;
+    
+    // avg is 0-255. Map to 0-100%
+    const level = Math.min(100, (avg / 255) * 150); // boosted for visibility
+    const peak = level > 0 ? Math.min(100, level + 15 + Math.random()*10) : 0;
+    
+    // Even/Odd index for Left/Right channels (simulated)
+    meters.forEach((m, idx) => {
+      m.style.height = (idx % 2 === 0 ? level : peak) + '%';
+    });
+
+    if (!vid.paused) {
+      audioRaf = requestAnimationFrame(updateMeters);
+    } else {
+      meters.forEach(m => m.style.height = '0%');
+    }
+  }
+
+  if (vid) {
+    vid.addEventListener('play', () => {
+      if (!audioCtx && typeof AudioContext !== 'undefined') {
+        try {
+          audioCtx = new AudioContext();
+          const source = audioCtx.createMediaElementSource(vid);
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 64;
+          source.connect(analyser);
+          analyser.connect(audioCtx.destination);
+          dataArray = new Uint8Array(analyser.frequencyBinCount);
+        } catch(e) {}
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      updateMeters();
+    });
+    vid.addEventListener('pause', () => {
+      if (audioRaf) cancelAnimationFrame(audioRaf);
+      meters.forEach(m => m.style.height = '0%');
+    });
+  }
+
+})();
+</script>
+
