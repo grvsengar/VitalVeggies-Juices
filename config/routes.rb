@@ -46,6 +46,12 @@ Rails.application.routes.draw do
   get "signup", to: "registrations#new"
   post "signup", to: "registrations#create"
 
+  namespace :portal do
+    resource :ai_query, only: %i[show create] do
+      post :export, on: :member
+    end
+  end
+
   namespace :admin do
     # Remove separate admin login
     match "logout", to: "/sessions#destroy", via: %i[get delete]

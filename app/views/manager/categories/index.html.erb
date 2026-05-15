@@ -1,33 +1,63 @@
 <% content_for :title, "Manager Categories" %>
 
-<section class="manager-page">
-  <div class="manager-page__header">
+<section class="manager-page mgr-page">
+  <div class="manager-page__header mgr-page__header">
     <div>
-      <h1>Categories</h1>
-      <p><%= Date.current.strftime("%A %d %B, %Y") %></p>
+      <h1 class="mgr-page-title">Categories</h1>
+      <p class="mgr-page-date"><%= Date.current.strftime("%A, %d %B %Y") %></p>
     </div>
-    <%= link_to "View products", manager_products_path, class: "manager-primary-action" %>
+    <%= link_to manager_products_path, class: "manager-primary-action mgr-btn-primary" do %>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+        <circle cx="7" cy="7" r="1.5" fill="currentColor"/>
+      </svg>
+      View Products
+    <% end %>
   </div>
 
-  <div class="manager-category-grid">
+  <div class="mgr-category-grid">
     <% @categories.each do |category| %>
       <% active_count = category.products.count(&:active?) %>
-      <article class="manager-category-card">
-        <div class="manager-category-card__media">
+      <% total_count = category.products.size %>
+      <%
+        total_stock = category.products.sum(&:stock_quantity)
+        sold_out_in_cat = category.products.count { |p| p.stock_quantity == 0 }
+      %>
+      <article class="manager-category-card mgr-category-card">
+        <div class="mgr-category-card__media">
           <%= image_tag category_image_path(category), alt: category.name %>
-        </div>
-        <div>
-          <h2><%= category.name %></h2>
-          <p><%= pluralize(category.products.size, "product") %> · <%= pluralize(active_count, "active item") %></p>
+          <span class="mgr-category-card__status-dot <%= category.active? ? 'mgr-dot--green' : 'mgr-dot--red' %>"></span>
         </div>
 
-        <div class="manager-category-card__footer">
-          <span class="<%= category.active? ? 'manager-pill manager-pill--ok' : 'manager-pill manager-pill--danger' %>">
+        <div class="mgr-category-card__body">
+          <div class="mgr-category-card__count"><%= total_count %></div>
+          <h2 class="mgr-category-card__name"><%= category.name %></h2>
+          <p class="mgr-category-card__meta">
+            <%= pluralize(active_count, "active item") %>
+            <% if sold_out_in_cat > 0 %>
+              &middot; <span class="mgr-text-danger"><%= sold_out_in_cat %> sold out</span>
+            <% end %>
+          </p>
+
+          <div class="mgr-category-card__bar-wrap">
+            <div class="mgr-category-stock-bar">
+              <%
+                healthy = category.products.count { |p| p.stock_quantity > 5 }
+                pct = total_count > 0 ? (healthy.to_f / total_count * 100).round : 0
+              %>
+              <div class="mgr-category-stock-bar__fill" style="width: <%= pct %>%"></div>
+            </div>
+            <span class="mgr-category-card__stock-label"><%= pct %>% healthy stock</span>
+          </div>
+        </div>
+
+        <div class="manager-category-card__footer mgr-category-card__footer">
+          <span class="<%= category.active? ? 'manager-pill manager-pill--ok' : 'manager-pill manager-pill--danger' %> mgr-status-badge">
             <%= category.active? ? "Active" : "Hidden" %>
           </span>
-          <div class="manager-category-card__actions">
-            <%= link_to "Products", manager_products_path(category_id: category.id), class: "manager-mini-button" %>
-            <%= link_to "Stock", manager_inventory_index_path(category_id: category.id), class: "manager-mini-button" %>
+          <div class="manager-category-card__actions mgr-category-card__actions">
+            <%= link_to "Products", manager_products_path(category_id: category.id), class: "manager-mini-button mgr-mini-button" %>
+            <%= link_to "Stock", manager_inventory_index_path(category_id: category.id), class: "manager-mini-button mgr-mini-button" %>
           </div>
         </div>
       </article>

@@ -1,29 +1,158 @@
 <% content_for :title, @order.order_number %>
 
-<section class="section">
-  <div class="container split-grid">
-    <div class="summary-card">
-      <h2><%= @order.order_number %></h2>
-      <p><strong>Customer:</strong> <%= @order.customer_name %></p>
-      <p><strong>Phone:</strong> <%= @order.phone %></p>
-      <p><strong>Address:</strong> <%= @order.full_address %></p>
-      <div class="portal-table">
-        <% @order.order_items.each do |item| %>
-          <div class="portal-table__row">
-            <span><%= item.product_name %> x <%= item.quantity %></span>
-            <strong><%= money(item.line_total) %></strong>
+<section class="manager-page mgr-page">
+  <div class="mgr-show-header">
+    <%= link_to manager_orders_path, class: "mgr-back-link" do %>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Back to Orders
+    <% end %>
+    <div class="mgr-show-header__right">
+      <span class="<%= order_status_badge_class(@order.status) %> mgr-status-badge mgr-status-badge--lg"><%= @order.status.humanize %></span>
+    </div>
+  </div>
+
+  <div class="mgr-order-show-grid">
+    <!-- Left column: order details -->
+    <div class="mgr-order-show-main">
+      <!-- Order items -->
+      <article class="manager-card mgr-card mgr-order-items-card">
+        <div class="mgr-card__header">
+          <div class="mgr-card__title-row">
+            <span class="mgr-card__icon mgr-card__icon--blue">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+              </svg>
+            </span>
+            <h2>Order Items</h2>
           </div>
-        <% end %>
-      </div>
+          <span class="mgr-order-num-badge"><%= @order.order_number %></span>
+        </div>
+
+        <div class="mgr-order-items">
+          <% @order.order_items.each do |item| %>
+            <div class="mgr-order-item">
+              <div class="mgr-order-item__info">
+                <span class="mgr-order-item__avatar"><%= item.product_name.to_s.first.upcase %></span>
+                <div>
+                  <strong><%= item.product_name %></strong>
+                  <small>Qty: <%= item.quantity %></small>
+                </div>
+              </div>
+              <strong class="mgr-order-item__price"><%= money(item.line_total) %></strong>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="mgr-order-total">
+          <span>Order Total</span>
+          <strong><%= money(@order.total) %></strong>
+        </div>
+      </article>
+
+      <!-- Status timeline -->
+      <article class="manager-card mgr-card mgr-timeline-card">
+        <div class="mgr-card__header">
+          <div class="mgr-card__title-row">
+            <span class="mgr-card__icon mgr-card__icon--purple">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </span>
+            <h2>Order Timeline</h2>
+          </div>
+        </div>
+        <%
+          all_statuses = %w[pending confirmed preparing out_for_delivery delivered]
+          current_idx = all_statuses.index(@order.status.to_s) || 0
+        %>
+        <div class="mgr-timeline">
+          <% all_statuses.each_with_index do |st, i| %>
+            <div class="mgr-timeline__step <%= i < current_idx ? 'mgr-timeline__step--done' : '' %> <%= i == current_idx ? 'mgr-timeline__step--active' : '' %>">
+              <div class="mgr-timeline__dot">
+                <% if i < current_idx %>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                <% elsif i == current_idx %>
+                  <span></span>
+                <% end %>
+              </div>
+              <div class="mgr-timeline__label"><%= st.humanize %></div>
+            </div>
+          <% end %>
+        </div>
+      </article>
     </div>
 
-    <div class="form-card">
-      <h2>Update fulfilment status</h2>
-      <%= form_with model: [:manager, @order], class: "stack-form" do |form| %>
-        <%= form.select :status, Order.statuses.keys.map { |status| [status.humanize, status] }, {}, class: "field" %>
-        <%= form.text_field :delivery_window, class: "field", placeholder: "Delivery window" %>
-        <%= form.submit "Save status", class: "button button--primary" %>
-      <% end %>
+    <!-- Right column: customer info + update form -->
+    <div class="mgr-order-show-side">
+      <!-- Customer info -->
+      <article class="manager-card mgr-card mgr-customer-card">
+        <div class="mgr-card__header">
+          <div class="mgr-card__title-row">
+            <span class="mgr-card__icon mgr-card__icon--green">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <h2>Customer</h2>
+          </div>
+        </div>
+        <div class="mgr-customer-info">
+          <div class="mgr-customer-info__avatar"><%= @order.customer_name.to_s.first.upcase %></div>
+          <div class="mgr-customer-info__details">
+            <strong><%= @order.customer_name %></strong>
+            <div class="mgr-customer-info__row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.09a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 15z"/>
+              </svg>
+              <span><%= @order.phone %></span>
+            </div>
+            <div class="mgr-customer-info__row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span><%= @order.full_address %></span>
+            </div>
+          </div>
+        </div>
+        <% if @order.delivery_window.present? %>
+          <div class="mgr-delivery-window">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>Delivery window: <%= @order.delivery_window %></span>
+          </div>
+        <% end %>
+      </article>
+
+      <!-- Update form -->
+      <article class="manager-card mgr-card mgr-update-card">
+        <div class="mgr-card__header">
+          <div class="mgr-card__title-row">
+            <span class="mgr-card__icon mgr-card__icon--orange">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </span>
+            <h2>Update Status</h2>
+          </div>
+        </div>
+        <%= form_with model: [:manager, @order], class: "stack-form mgr-update-form" do |form| %>
+          <div class="mgr-form-group">
+            <label class="mgr-label">Fulfilment Status</label>
+            <%= form.select :status, Order.statuses.keys.map { |status| [status.humanize, status] }, {}, class: "field mgr-select" %>
+          </div>
+          <div class="mgr-form-group">
+            <label class="mgr-label">Delivery Window</label>
+            <%= form.text_field :delivery_window, class: "field mgr-input", placeholder: "e.g. 2pm - 4pm today" %>
+          </div>
+          <%= form.submit "Save Status", class: "button button--primary mgr-btn-submit" %>
+        <% end %>
+      </article>
     </div>
   </div>
 </section>

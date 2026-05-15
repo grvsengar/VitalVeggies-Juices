@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_30_115500) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_13_121000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -28,6 +28,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_30_115500) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_addresses_on_user_id"
+  end
+
+  create_table "ai_query_logs", force: :cascade do |t|
+    t.bigint "user_id"
+    t.text "question", null: false
+    t.text "sql"
+    t.string "status", default: "pending", null: false
+    t.string "llm_model"
+    t.integer "execution_duration_ms"
+    t.integer "row_count"
+    t.text "error_message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_ai_query_logs_on_user_id"
   end
 
   create_table "articles", force: :cascade do |t|
@@ -208,6 +222,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_30_115500) do
   end
 
   add_foreign_key "addresses", "users"
+  add_foreign_key "ai_query_logs", "users"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
   add_foreign_key "orders", "addresses"

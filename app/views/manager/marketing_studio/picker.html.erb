@@ -1,0 +1,30 @@
+<% content_for :title, "Marketing Studio" %>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Manager tools</p>
+        <h2>Marketing Studio</h2>
+        <p>Choose an article to open the video editing workspace.</p>
+      </div>
+    </div>
+
+    <div class="portal-table portal-table--cards">
+      <% @articles.each do |article| %>
+        <div class="summary-card">
+          <h2><%= article.title %></h2>
+          <p><%= article.excerpt %></p>
+          <p class="ai-query-empty">
+            <% if article.video.present? %>
+              Video attached
+            <% else %>
+              No video attached yet
+            <% end %>
+          </p>
+          <%= link_to "Open studio", manager_marketing_studio_path(article_id: article.id), class: "button button--primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>

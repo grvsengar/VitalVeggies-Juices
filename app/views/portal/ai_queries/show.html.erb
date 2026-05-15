@@ -1,0 +1,550 @@
+<% content_for :title, "AI Query Console" %>
+
+<div class="aiq-shell">
+  <%# ── Left sidebar ── %>
+  <aside class="aiq-sidebar">
+    <div class="aiq-sidebar__header">
+      <div class="aiq-logo-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M4.22 19.78l2.12-2.12m11.32-11.32 2.12-2.12"/></svg>
+      </div>
+      <div>
+        <p class="aiq-eyebrow">AI Analytics</p>
+        <h1 class="aiq-title">Query Console</h1>
+      </div>
+    </div>
+
+    <div class="aiq-status-chip <%= @health&.success? ? 'aiq-status-chip--ok' : 'aiq-status-chip--err' %>">
+      <span class="aiq-status-dot"></span>
+      <% if @health&.success? %>
+        Ollama online &mdash; <strong><%= @health[:model] %></strong>
+      <% else %>
+        Ollama offline
+      <% end %>
+    </div>
+
+    <%= form_with scope: :ai_query, url: portal_ai_query_path, method: :post,
+          class: "aiq-form", id: "ai-query-form", data: { turbo: false } do |form| %>
+      <label class="aiq-label" for="ai_query_question">Ask anything about your data</label>
+      <%= form.text_area :question, value: @question, rows: 4, id: "ai_query_question",
+            class: "aiq-textarea", placeholder: "e.g. orders last 7 days, top 5 products, total revenue…" %>
+      <p class="aiq-hint">Press <kbd>Enter</kbd> to run &middot; <kbd>Shift+Enter</kbd> for new line</p>
+      <button type="submit" class="aiq-run-btn" id="aiq-submit-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Run query
+      </button>
+    <% end %>
+
+    <%# Quick example pills %>
+    <div class="aiq-examples">
+      <p class="aiq-examples__label">Quick queries</p>
+      <button class="aiq-example-pill" type="button">All orders</button>
+      <button class="aiq-example-pill" type="button">Total revenue</button>
+      <button class="aiq-example-pill" type="button">Top 5 products</button>
+      <button class="aiq-example-pill" type="button">Low stock products</button>
+      <button class="aiq-example-pill" type="button">Delivered orders</button>
+      <button class="aiq-example-pill" type="button">Monthly revenue</button>
+    </div>
+
+    <%# Recent query history %>
+    <% recent = AiQueryLog.where(user: current_user).where(status: "succeeded").order(created_at: :desc).limit(8) %>
+    <% if recent.any? %>
+      <div class="aiq-history">
+        <p class="aiq-rules__heading">Recent queries</p>
+        <ul class="aiq-history__list">
+          <% recent.each do |log| %>
+            <li>
+              <button class="aiq-history__item" type="button" data-question="<%= log.question %>">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-8.77"/></svg>
+                <%= truncate(log.question, length: 34) %>
+              </button>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="aiq-rules">
+      <p class="aiq-rules__heading">Guardrails</p>
+      <ul class="aiq-rules__list">
+        <li>Read-only queries only</li>
+        <li>Allowlisted tables only</li>
+        <li>Self-healing retry on error</li>
+        <li>Results cached 5 min</li>
+        <li>5 s statement timeout</li>
+      </ul>
+    </div>
+  </aside>
+
+  <%# ── Main result panel ── %>
+  <main class="aiq-main">
+    <%# ── Spell-correction notice ── %>
+    <% corrected_from = @result&.[](:corrected_from) %>
+    <% if corrected_from.present? %>
+      <div class="aiq-correction-notice">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Showing results for <strong>"<%= @question %>"</strong> &mdash; auto-corrected from <em>"<%= corrected_from %>"</em>
+      </div>
+    <% end %>
+
+    <% if @multi_results.present? %>
+      <%# ── Multi-intent: render each sub-query as a separate panel ── %>
+      <div class="aiq-multi-header">
+        <span class="aiq-result-badge aiq-result-badge--ok">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <%= @multi_results.length %> queries completed
+        </span>
+        <h2 class="aiq-result-title">Combined Results</h2>
+      </div>
+
+      <% @multi_results.each_with_index do |item, idx| %>
+        <% r = item[:result] %>
+        <div class="aiq-multi-panel">
+          <div class="aiq-multi-panel__label">
+            <span class="aiq-multi-panel__num"><%= idx + 1 %></span>
+            <strong><%= item[:question].capitalize %></strong>
+          </div>
+
+          <% if r.failure? %>
+            <p class="aiq-error-msg"><%= r.message %></p>
+          <% elsif r[:conversational] %>
+            <p class="aiq-summary"><%= r[:summary] %></p>
+          <% else %>
+            <% if r[:summary].present? %>
+              <p class="aiq-summary"><%= r[:summary] %></p>
+            <% end %>
+            <% if r[:sql].present? %>
+              <div class="aiq-sql-block">
+                <p class="aiq-block-label">Executed SQL</p>
+                <pre><code><%= r[:sql] %></code></pre>
+              </div>
+            <% end %>
+            <% if r[:rows].present? %>
+              <%
+                m_numeric_cols = r[:columns].select { |c| r[:rows].first[c].is_a?(Numeric) }
+                m_label_col   = r[:columns].find { |c| !m_numeric_cols.include?(c) }
+                m_is_single   = r[:rows].length == 1 && r[:columns].length == 1
+                m_chartable   = !m_is_single && r[:rows].length >= 2 && m_label_col && m_numeric_cols.any?
+                m_is_currency = m_numeric_cols.any? { |c| c =~ /revenue|total|price|amount|fee|discount/i }
+              %>
+              <% if m_is_single %>
+                <div class="aiq-aggregate-card">
+                  <p class="aiq-block-label"><%= r[:columns].first.humanize %></p>
+                  <p class="aiq-aggregate-value">
+                    <% agg_v = r[:rows].first[r[:columns].first] %>
+                    <% if agg_v.nil? %>
+                      <span class="aiq-aggregate-null">No data</span>
+                    <% elsif r[:columns].first.to_s =~ /revenue|total|price|amount|subtotal|fee|discount/i %>
+                      ₹<%= number_with_delimiter(agg_v.to_f.round(2)) %>
+                    <% else %>
+                      <%= number_with_delimiter(agg_v) %>
+                    <% end %>
+                  </p>
+                </div>
+              <% elsif m_chartable %>
+                <%
+                  palette = ["rgba(45,106,79,0.85)","rgba(82,183,136,0.85)","rgba(107,33,168,0.75)","rgba(59,91,219,0.75)","rgba(220,100,30,0.75)"]
+                  m_chart_labels   = r[:rows].map { |rw| rw[m_label_col].to_s.strip }
+                  m_chart_datasets = m_numeric_cols.map.with_index do |col, i|
+                    { label: col.humanize, data: r[:rows].map { |rw| rw[col]&.to_f || 0 },
+                      backgroundColor: palette[i % palette.length],
+                      borderColor: palette[i % palette.length].gsub(/[\d.]+\)$/, "1)"),
+                      borderWidth: 0, borderRadius: 6, borderSkipped: false }
+                  end
+                  m_chart_id = "aiq-chart-multi-#{idx}"
+                %>
+                <div id="<%= m_chart_id %>" style="margin-top:12px;min-height:260px"></div>
+                <script type="module">
+                import ApexCharts from "apexcharts";
+                (function() {
+                  var isCurrency = <%= raw m_is_currency.to_json %>;
+                  var labels = <%= raw m_chart_labels.to_json %>;
+                  var rawDatasets = <%= raw m_chart_datasets.to_json %>;
+                  var series = rawDatasets.map(function(d) { return { name: d.label, data: d.data }; });
+                  var colors = rawDatasets.map(function(d) { return d.borderColor; });
+                  new ApexCharts(document.getElementById('<%= m_chart_id %>'), {
+                    series: series,
+                    chart: { type: 'bar', height: 260, toolbar: { show: false }, fontFamily: 'inherit', animations: { enabled: true, easing: 'easeinout', speed: 500 } },
+                    colors: colors,
+                    xaxis: { categories: labels, labels: { style: { fontSize: '12px', colors: '#666' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+                    yaxis: { labels: { style: { fontSize: '11px', colors: '#888' }, formatter: function(v) { return isCurrency ? '₹' + (v >= 1000 ? (v/1000).toFixed(1)+'k' : v) : v; } } },
+                    grid: { borderColor: '#f0ece6', strokeDashArray: 3 },
+                    plotOptions: { bar: { borderRadius: 5, columnWidth: '55%' } },
+                    dataLabels: { enabled: false },
+                    legend: { show: series.length > 1, position: 'top', fontSize: '12px' },
+                    tooltip: { y: { formatter: function(v) { return isCurrency ? '₹' + v.toLocaleString('en-IN') : v.toLocaleString(); } } }
+                  }).render();
+                })();
+                </script>
+              <% else %>
+                <div class="aiq-table-wrap">
+                  <table class="aiq-table">
+                    <thead><tr><% r[:columns].each do |col| %><th class="<%= 'aiq-th--num' if r[:rows].first && r[:rows].first[col].is_a?(Numeric) %>"><%= col.humanize %></th><% end %></tr></thead>
+                    <tbody>
+                      <% r[:rows].each do |row| %>
+                        <tr>
+                          <% r[:columns].each do |col| %>
+                            <% val = row[col] %>
+                            <td class="<%= 'aiq-td--num' if val.is_a?(Numeric) %>">
+                              <% if val.nil? %><span class="aiq-null">—</span>
+                              <% elsif col.to_s == "status" %><span class="aiq-status-pill aiq-status-pill--<%= val %>"><%= Order.statuses.key(val.to_i)&.humanize || val %></span>
+                              <% elsif col.to_s == "active" %><span class="aiq-bool-pill aiq-bool-pill--<%= val %>"><%= val ? "active" : "inactive" %></span>
+                              <% elsif col.to_s =~ /total|price|amount|subtotal|fee|discount|revenue/i && val.is_a?(Numeric) %>₹<%= number_with_delimiter(val.to_f.round(2)) %>
+                              <% elsif val.is_a?(Time) || val.is_a?(DateTime) || val.is_a?(ActiveSupport::TimeWithZone) %><%= val.strftime("%d %b %Y, %H:%M") %>
+                              <% else %><%= val %><% end %>
+                            </td>
+                          <% end %>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% end %>
+            <% else %>
+              <div class="aiq-no-rows">
+                <p>Query ran successfully but returned no rows.</p>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+    <% elsif @result.nil? %>
+      <%# Empty state with live stats %>
+      <% stats = LocalDbAi::LiveContextBuilder.new.build rescue nil %>
+      <div class="aiq-empty-state">
+        <div class="aiq-empty-state__icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h2>Ask your data anything</h2>
+        <p>Type a question in plain English — I understand your store's orders, products, revenue, and customers.</p>
+
+        <%# Live store pulse cards %>
+        <div class="aiq-pulse">
+          <div class="aiq-pulse__card">
+            <span class="aiq-pulse__val"><%= Order.count %></span>
+            <span class="aiq-pulse__lbl">Total Orders</span>
+          </div>
+          <div class="aiq-pulse__card">
+            <span class="aiq-pulse__val">₹<%= number_with_delimiter(Order.sum(:total).to_f.round(0)) %></span>
+            <span class="aiq-pulse__lbl">Total Revenue</span>
+          </div>
+          <div class="aiq-pulse__card">
+            <span class="aiq-pulse__val"><%= Product.count %></span>
+            <span class="aiq-pulse__lbl">Products</span>
+          </div>
+          <div class="aiq-pulse__card">
+            <span class="aiq-pulse__val"><%= Order.where("created_at >= ?", 7.days.ago).count %></span>
+            <span class="aiq-pulse__lbl">Last 7 Days</span>
+          </div>
+        </div>
+      </div>
+
+    <% elsif @result.failure? %>
+      <div class="aiq-result-header aiq-result-header--error">
+        <div class="aiq-result-header__left">
+          <span class="aiq-result-badge aiq-result-badge--error">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <%= @result.code.to_s.humanize %>
+          </span>
+          <h2 class="aiq-result-title">Query failed</h2>
+        </div>
+      </div>
+      <div class="aiq-result-body">
+        <p class="aiq-error-msg"><%= @result.message %></p>
+        <% if @result[:sql].present? %>
+          <div class="aiq-sql-block">
+            <p class="aiq-block-label">Attempted SQL</p>
+            <pre><code><%= @result[:sql] %></code></pre>
+          </div>
+        <% end %>
+      </div>
+
+    <% elsif @result[:conversational] %>
+      <div class="aiq-chat-reply">
+        <div class="aiq-chat-reply__avatar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M4.22 19.78l2.12-2.12m11.32-11.32 2.12-2.12"/></svg>
+        </div>
+        <div class="aiq-chat-reply__body">
+          <%= simple_format(@result[:summary]) %>
+        </div>
+      </div>
+
+    <% else %>
+      <%# ── Successful query result ── %>
+      <div class="aiq-result-header">
+        <div class="aiq-result-header__left">
+          <span class="aiq-result-badge aiq-result-badge--ok">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <%= @result[:row_count].to_i %> <%= "row".pluralize(@result[:row_count].to_i) %>
+          </span>
+          <h2 class="aiq-result-title">Query completed</h2>
+          <% if @result[:from_cache] %>
+            <span class="aiq-cache-badge" title="Served from 5-min cache">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.07-8.77"/></svg>
+              cached
+            </span>
+          <% end %>
+        </div>
+        <div class="aiq-result-header__right">
+          <% if @result[:model] == "template" %>
+            <span class="aiq-model-tag aiq-model-tag--fast">⚡ instant</span>
+          <% else %>
+            <span class="aiq-model-tag"><%= @result[:model] %></span>
+          <% end %>
+          <% if @result[:rows].present? && @result[:columns].present? %>
+            <div class="aiq-export-btns">
+              <%= form_tag export_portal_ai_query_path, method: :post, style: "display:inline", data: { turbo: false } do %>
+                <%= hidden_field_tag :question, @question %>
+                <%= hidden_field_tag :export_format, "csv" %>
+                <button type="submit" class="aiq-export-btn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  CSV
+                </button>
+              <% end %>
+              <%= form_tag export_portal_ai_query_path, method: :post, style: "display:inline", data: { turbo: false } do %>
+                <%= hidden_field_tag :question, @question %>
+                <%= hidden_field_tag :export_format, "xlsx" %>
+                <button type="submit" class="aiq-export-btn aiq-export-btn--xlsx">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Excel
+                </button>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="aiq-result-body">
+        <% if @result[:summary].present? %>
+          <p class="aiq-summary"><%= @result[:summary] %></p>
+        <% end %>
+
+        <% if @result[:assumptions].present? %>
+          <div class="aiq-assumptions">
+            <p class="aiq-block-label">Assumptions</p>
+            <ul>
+              <% @result[:assumptions].each do |a| %>
+                <li><%= a %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <% if @result[:sql].present? %>
+          <div class="aiq-sql-block">
+            <p class="aiq-block-label">Executed SQL</p>
+            <pre><code><%= @result[:sql] %></code></pre>
+          </div>
+        <% end %>
+
+        <% if @result[:rows].present? %>
+          <%
+            is_single_aggregate = @result[:rows].length == 1 && @result[:columns].length == 1
+            agg_value = is_single_aggregate ? @result[:rows].first[@result[:columns].first] : nil
+          %>
+          <%
+            # Detect if result is chartable:
+            # - multi-row with a label col + numeric col (e.g. monthly revenue)
+            # - single-row multi-column aggregates
+            numeric_cols = @result[:columns].select { |c| @result[:rows].first[c].is_a?(Numeric) }
+            label_col    = @result[:columns].find { |c| !numeric_cols.include?(c) }
+            chartable    = !is_single_aggregate && @result[:rows].length >= 2 && label_col && numeric_cols.any?
+          %>
+          <% if is_single_aggregate %>
+            <div class="aiq-aggregate-card">
+              <p class="aiq-block-label"><%= @result[:columns].first.humanize %></p>
+              <p class="aiq-aggregate-value">
+                <% if agg_value.nil? %>
+                  <span class="aiq-aggregate-null">No data for this period</span>
+                <% elsif @result[:columns].first.to_s =~ /revenue|total|price|amount|subtotal|fee|discount/i %>
+                  ₹<%= number_with_delimiter(agg_value.to_f.round(2)) %>
+                <% else %>
+                  <%= number_with_delimiter(agg_value) %>
+                <% end %>
+              </p>
+            </div>
+          <% elsif chartable %>
+            <%
+              palette = [
+                "rgba(45,106,79,0.85)",  "rgba(82,183,136,0.85)",
+                "rgba(107,33,168,0.75)", "rgba(59,91,219,0.75)",
+                "rgba(220,100,30,0.75)"
+              ]
+              chart_labels   = @result[:rows].map { |r| r[label_col].to_s.strip }
+              chart_datasets = numeric_cols.map.with_index do |col, i|
+                {
+                  label:           col.humanize,
+                  data:            @result[:rows].map { |r| r[col]&.to_f || 0 },
+                  backgroundColor: palette[i % palette.length],
+                  borderColor:     palette[i % palette.length].gsub(/[\d.]+\)$/, "1)"),
+                  borderWidth:     0,
+                  borderRadius:    6,
+                  borderSkipped:   false
+                }
+              end
+              is_currency = numeric_cols.any? { |c| c =~ /revenue|total|price|amount|fee|discount/i }
+            %>
+            <div class="aiq-chart-wrap">
+              <div class="aiq-chart-toolbar">
+                <button class="aiq-chart-toggle active" id="btn-chart" onclick="aiqShowChart()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                  Chart
+                </button>
+                <button class="aiq-chart-toggle" id="btn-table" onclick="aiqShowTable()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                  Table
+                </button>
+              </div>
+
+              <div id="aiq-chart-view">
+                <div id="aiq-chart" style="min-height:300px"></div>
+              </div>
+
+              <div id="aiq-table-view" style="display:none">
+                <table class="aiq-table">
+                  <thead>
+                    <tr><% @result[:columns].each do |col| %><th class="<%= 'aiq-th--num' if @result[:rows].first && @result[:rows].first[col].is_a?(Numeric) %>"><%= col.humanize %></th><% end %></tr>
+                  </thead>
+                  <tbody>
+                    <% @result[:rows].each do |row| %>
+                      <tr><% @result[:columns].each do |col| %><td><%= row[col] %></td><% end %></tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <script type="module">
+            import ApexCharts from "apexcharts";
+            (function() {
+              var isCurrency = <%= raw is_currency.to_json %>;
+              var labels = <%= raw chart_labels.to_json %>;
+              var rawDatasets = <%= raw chart_datasets.to_json %>;
+              var series = rawDatasets.map(function(d) { return { name: d.label, data: d.data }; });
+              var colors = rawDatasets.map(function(d) { return d.borderColor; });
+              new ApexCharts(document.getElementById('aiq-chart'), {
+                series: series,
+                chart: { type: 'bar', height: 300, toolbar: { show: false }, fontFamily: 'inherit', animations: { enabled: true, easing: 'easeinout', speed: 500 } },
+                colors: colors,
+                xaxis: { categories: labels, labels: { style: { fontSize: '12px', colors: '#666' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+                yaxis: { labels: { style: { fontSize: '11px', colors: '#888' }, formatter: function(v) { return isCurrency ? '₹' + (v >= 1000 ? (v/1000).toFixed(1)+'k' : v) : v; } } },
+                grid: { borderColor: '#f0ece6', strokeDashArray: 3 },
+                plotOptions: { bar: { borderRadius: 5, columnWidth: '55%' } },
+                dataLabels: { enabled: false },
+                legend: { show: series.length > 1, position: 'top', fontSize: '12px' },
+                tooltip: { y: { formatter: function(v) { return isCurrency ? '₹' + v.toLocaleString('en-IN') : v.toLocaleString(); } } }
+              }).render();
+            })();
+            </script>
+          <% else %>
+            <div class="aiq-table-wrap">
+              <table class="aiq-table">
+                <thead>
+                  <tr>
+                    <% @result[:columns].each do |col| %>
+                      <th class="<%= 'aiq-th--num' if @result[:rows].first && @result[:rows].first[col].is_a?(Numeric) %>"><%= col.humanize %></th>
+                    <% end %>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @result[:rows].each do |row| %>
+                    <tr>
+                      <% @result[:columns].each do |col| %>
+                        <% val = row[col] %>
+                        <td class="<%= 'aiq-td--num' if val.is_a?(Numeric) %>">
+                          <% if val.nil? %>
+                            <span class="aiq-null">—</span>
+                          <% elsif col.to_s == "status" %>
+                            <span class="aiq-status-pill aiq-status-pill--<%= val %>">
+                              <%= Order.statuses.key(val.to_i)&.humanize || val %>
+                            </span>
+                          <% elsif col.to_s == "payment_status" %>
+                            <span class="aiq-pay-pill aiq-pay-pill--<%= val %>"><%= val %></span>
+                          <% elsif col.to_s =~ /total|price|amount|subtotal|fee|discount|revenue/i && val.is_a?(Numeric) %>
+                            ₹<%= number_with_delimiter(val.to_f.round(2)) %>
+                          <% elsif val.is_a?(Time) || val.is_a?(DateTime) || val.is_a?(ActiveSupport::TimeWithZone) %>
+                            <%= val.strftime("%d %b %Y, %H:%M") %>
+                          <% elsif col.to_s == "active" %>
+                            <span class="aiq-bool-pill aiq-bool-pill--<%= val %>"><%= val ? "active" : "inactive" %></span>
+                          <% else %>
+                            <%= val %>
+                          <% end %>
+                        </td>
+                      <% end %>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="aiq-no-rows">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p>Query ran successfully but returned no rows. Try broadening your date range or removing status filters.</p>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </main>
+</div>
+
+<script>
+(function () {
+  var textarea = document.getElementById("ai_query_question");
+  var form     = document.getElementById("ai-query-form");
+
+  // Enter to submit, Shift+Enter for newline
+  textarea && textarea.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+  });
+
+  // Example pills fill textarea
+  document.querySelectorAll(".aiq-example-pill").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (textarea) { textarea.value = btn.textContent.trim(); textarea.focus(); }
+    });
+  });
+
+  // History items fill textarea
+  document.querySelectorAll(".aiq-history__item").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (textarea) { textarea.value = btn.dataset.question; textarea.focus(); }
+    });
+  });
+
+  // Loading state
+  form && form.addEventListener("submit", function () {
+    var btn = document.getElementById("aiq-submit-btn");
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:aiq-spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Thinking…';
+    }
+    var main = document.querySelector(".aiq-main");
+    if (main) {
+      main.innerHTML = [
+        '<div class="aiq-loading">',
+        '  <div class="aiq-loading__spinner"></div>',
+        '  <p>AI is analysing your question…</p>',
+        '  <p class="aiq-loading__sub">Generating SQL · Running query · Formatting results</p>',
+        '</div>'
+      ].join('');
+    }
+  });
+
+  // Auto-focus textarea
+  textarea && textarea.focus();
+})();
+
+function aiqShowChart() {
+  document.getElementById('aiq-chart-view').style.display = '';
+  document.getElementById('aiq-table-view').style.display = 'none';
+  document.getElementById('btn-chart').classList.add('active');
+  document.getElementById('btn-table').classList.remove('active');
+}
+function aiqShowTable() {
+  document.getElementById('aiq-chart-view').style.display = 'none';
+  document.getElementById('aiq-table-view').style.display = '';
+  document.getElementById('btn-chart').classList.remove('active');
+  document.getElementById('btn-table').classList.add('active');
+}
+</script>

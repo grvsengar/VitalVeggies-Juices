@@ -1,12 +1,43 @@
 <% content_for :title, "Manager Inventory" %>
 
-<section class="manager-page">
-  <div class="manager-page__header">
+<%
+  total_products = @products.size
+  sold_out_count = @products.count { |p| p.stock_quantity == 0 }
+  low_stock_count = @products.count { |p| p.stock_quantity > 0 && p.stock_quantity <= 5 }
+%>
+
+<section class="manager-page mgr-page">
+  <div class="manager-page__header mgr-page__header">
     <div>
-      <h1>Inventory</h1>
-      <p><%= Date.current.strftime("%A %d %B, %Y") %></p>
+      <h1 class="mgr-page-title">Inventory</h1>
+      <p class="mgr-page-date"><%= Date.current.strftime("%A, %d %B %Y") %></p>
     </div>
-    <%= link_to "Low stock only", manager_inventory_index_path(stock: "low_stock"), class: "manager-primary-action" %>
+    <%= link_to manager_inventory_index_path(stock: "low_stock"), class: "manager-primary-action mgr-btn-primary" do %>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      Low Stock Only
+    <% end %>
+  </div>
+
+  <div class="mgr-inv-stats">
+    <div class="mgr-inv-stat">
+      <span class="mgr-inv-stat__num"><%= total_products %></span>
+      <span class="mgr-inv-stat__label">Total Products</span>
+    </div>
+    <div class="mgr-inv-stat mgr-inv-stat--red">
+      <span class="mgr-inv-stat__num"><%= sold_out_count %></span>
+      <span class="mgr-inv-stat__label">Sold Out</span>
+    </div>
+    <div class="mgr-inv-stat mgr-inv-stat--orange">
+      <span class="mgr-inv-stat__num"><%= low_stock_count %></span>
+      <span class="mgr-inv-stat__label">Low Stock</span>
+    </div>
+    <div class="mgr-inv-stat mgr-inv-stat--green">
+      <span class="mgr-inv-stat__num"><%= total_products - sold_out_count - low_stock_count %></span>
+      <span class="mgr-inv-stat__label">Healthy Stock</span>
+    </div>
   </div>
 
   <%= form_with url: manager_inventory_index_path, method: :get, class: "manager-toolbar" do |form| %>
@@ -16,9 +47,9 @@
     <%= form.submit "Filter", class: "manager-primary-action" %>
   <% end %>
 
-  <article class="manager-card">
-    <div class="manager-table manager-table--products">
-      <div class="manager-table__head">
+  <article class="manager-card mgr-card">
+    <div class="manager-table manager-table--products mgr-table mgr-table--products">
+      <div class="manager-table__head mgr-table__head">
         <span>Product</span>
         <span>SKU</span>
         <span>Category</span>

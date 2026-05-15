@@ -1,14 +1,14 @@
 <% content_for :title, "Manager Orders" %>
 
-<%= turbo_stream_from "manager_orders" %>
-
-<section class="manager-page">
-  <div class="manager-page__header">
+<section class="manager-page mgr-page">
+  <div class="manager-page__header mgr-page__header">
     <div>
-      <h1>Orders</h1>
-      <p><%= Date.current.strftime("%A %d %B, %Y") %></p>
+      <h1 class="mgr-page-title">Orders</h1>
+      <p class="mgr-page-date"><%= Date.current.strftime("%A, %d %B %Y") %></p>
     </div>
   </div>
+
+  <%= turbo_stream_from "manager_orders" %>
 
   <div class="manager-order-filters">
     <%= link_to "All", manager_orders_path(q: params[:q]), class: "manager-filter-pill #{'manager-filter-pill--active' if params[:status].blank?}" %>
@@ -23,9 +23,9 @@
     <%= form.submit "Search", class: "manager-primary-action" %>
   <% end %>
 
-  <article class="manager-card">
-    <div class="manager-table manager-table--orders">
-      <div class="manager-table__head">
+  <article class="manager-card mgr-card">
+    <div class="manager-table manager-table--orders mgr-table mgr-table--orders">
+      <div class="manager-table__head mgr-table__head">
         <span>Order ID</span>
         <span>Customer</span>
         <span>Date</span>
@@ -34,11 +34,23 @@
         <span>Payment</span>
         <span>Status</span>
       </div>
-      <div id="manager_orders_rows" class="manager-table__body">
-        <% @orders.each do |order| %>
-          <%= render "order_row", order: order, highlight: false %>
+      <% @orders.each do |order| %>
+        <%= link_to manager_order_path(order), class: "manager-table__row mgr-table__row" do %>
+          <span class="mgr-order-num"><strong><%= order.order_number %></strong></span>
+          <span class="mgr-customer-cell">
+            <span class="mgr-avatar-sm"><%= order.customer_name.to_s.first.upcase %></span>
+            <%= order.customer_name %>
+          </span>
+          <span class="mgr-date-cell">
+            <span><%= order.created_at.strftime("%b %d") %></span>
+            <small><%= order.created_at.strftime("%H:%M") %></small>
+          </span>
+          <span><%= order.order_items.sum(&:quantity) %></span>
+          <span class="mgr-amount"><%= money(order.total) %></span>
+          <span class="<%= payment_badge_class(order.payment_status) %> mgr-status-badge"><%= order.payment_status.humanize %></span>
+          <span class="<%= order_status_badge_class(order.status) %> mgr-status-badge"><%= order.status.humanize %></span>
         <% end %>
-      </div>
+      <% end %>
     </div>
   </article>
 </section>

@@ -1,20 +1,44 @@
 <% products = local_assigns.fetch(:products) { Product.active.includes(:category).where(stock_quantity: 0..5).ordered.limit(6) } %>
 
-<article id="manager_low_stock_alerts" class="manager-card product-live-region">
-  <div class="manager-card__header">
-    <h2>Low stock alerts</h2>
-    <%= link_to "Inventory", manager_inventory_index_path(stock: "low_stock"), class: "manager-text-link", data: { turbo_frame: "_top" } %>
+<article id="manager_low_stock_alerts" class="manager-card mgr-card product-live-region">
+  <div class="manager-card__header mgr-card__header">
+    <div class="mgr-card__title-row">
+      <span class="mgr-card__icon mgr-card__icon--red">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </span>
+      <h2>Low Stock Alerts</h2>
+    </div>
+    <%= link_to "Manage", manager_inventory_index_path(stock: "low_stock"), class: "manager-text-link mgr-text-link", data: { turbo_frame: "_top" } %>
   </div>
 
-  <div class="manager-stock-list">
+  <div class="manager-stock-list mgr-stock-list">
     <% products.each do |product| %>
-      <%= link_to edit_manager_inventory_path(product), class: "manager-stock-item", data: { turbo_frame: "_top" } do %>
-        <%= image_tag product_image_path(product), alt: product.name, loading: "lazy", decoding: "async" %>
-        <span>
+      <%
+        urgency_class = if product.stock_quantity == 0
+          "mgr-stock-item--critical"
+        elsif product.stock_quantity <= 3
+          "mgr-stock-item--danger"
+        else
+          "mgr-stock-item--warning"
+        end
+      %>
+      <%= link_to edit_manager_inventory_path(product), class: "manager-stock-item mgr-stock-item #{urgency_class}", data: { turbo_frame: "_top" } do %>
+        <span class="mgr-stock-thumb">
+          <%= image_tag product_image_path(product), alt: product.name, loading: "lazy", decoding: "async" %>
+        </span>
+        <span class="mgr-stock-info">
           <strong><%= product.name %></strong>
           <small><%= product.sku %></small>
         </span>
-        <span class="<%= stock_badge_class(product) %>"><%= stock_badge(product) %></span>
+        <span class="mgr-stock-qty-wrap">
+          <span class="<%= stock_badge_class(product) %> mgr-stock-badge"><%= stock_badge(product) %></span>
+          <div class="mgr-stock-bar">
+            <div class="mgr-stock-bar__fill" style="width: <%= [[(product.stock_quantity.to_f / 20 * 100), 0].max, 100].min %>%"></div>
+          </div>
+        </span>
       <% end %>
     <% end %>
   </div>

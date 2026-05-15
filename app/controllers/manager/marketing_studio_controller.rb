@@ -3,14 +3,23 @@ module Manager
     MAX_REMOTE_AUDIO_BYTES = 25.megabytes
 
     before_action :require_manager!
-    before_action :set_article, only: %i[show video]
+    before_action :set_article, only: :video
 
     def show
+      unless params[:article_id].present?
+        @articles = Article.order(published_on: :desc, created_at: :desc)
+        render :picker
+        return
+      end
+
+      @article = Article.find(params[:article_id])
       @hide_site_chrome = true # Premium immersive experience
     end
 
     def video
       return head :not_found unless @article.video.present? && File.exist?(@article.video.path)
+
+      @hide_site_chrome = true # Premium immersive experience
 
       response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
       response.headers["Cross-Origin-Embedder-Policy"] = "credentialless"

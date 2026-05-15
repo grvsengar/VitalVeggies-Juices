@@ -17,48 +17,117 @@
 
     <% if portal_signed_in?(:manager) && !@hide_portal_nav %>
       <div class="manager-shell">
-        <aside class="manager-sidebar">
-          <%= link_to manager_dashboard_path, class: "manager-brand" do %>
-            <span class="manager-brand__mark">VV</span>
+        <aside class="manager-sidebar mgr-sidebar">
+          <%= link_to manager_root_path, class: "manager-brand mgr-brand" do %>
+            <span class="mgr-brand__mark">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C8 2 4 5 4 9c0 3.5 2.5 6.5 6 7.7V22h4v-5.3c3.5-1.2 6-4.2 6-7.7 0-4-4-7-8-7z" fill="#6ef04f"/>
+                <path d="M12 2c2 3 2 6 0 9" stroke="#2d6a2d" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </span>
             <span>
-              <strong>Vital Manager</strong>
-              <small>Daily operations</small>
+              <strong>VitalVeggies</strong>
+              <small>Manager Portal</small>
             </span>
           <% end %>
 
-          <nav class="manager-nav" aria-label="Manager navigation">
-            <%= link_to manager_dashboard_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/dashboard'}" do %>
+          <nav class="manager-nav mgr-nav" aria-label="Manager navigation">
+            <%= link_to manager_root_path, class: "manager-nav__link mgr-nav__link #{'manager-nav__link--active mgr-nav__link--active' if current_page?(manager_root_path)}" do %>
+              <span class="mgr-nav__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                  <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                </svg>
+              </span>
               <span>Dashboard</span>
             <% end %>
-            <%= link_to manager_products_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/products'}" do %>
+
+            <%= link_to manager_products_path, class: "manager-nav__link mgr-nav__link #{'manager-nav__link--active mgr-nav__link--active' if controller_path == 'manager/products'}" do %>
+              <span class="mgr-nav__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+                  <circle cx="7" cy="7" r="1.5" fill="currentColor"/>
+                </svg>
+              </span>
               <span>Products</span>
             <% end %>
-            <%= link_to manager_inventory_index_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/inventory'}" do %>
+
+            <%= link_to manager_inventory_index_path, class: "manager-nav__link mgr-nav__link #{'manager-nav__link--active mgr-nav__link--active' if controller_path == 'manager/inventory'}" do %>
+              <span class="mgr-nav__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
+              </span>
               <span>Inventory</span>
             <% end %>
-            <%= link_to manager_orders_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/orders'}" do %>
+
+            <%= link_to manager_orders_path, class: "manager-nav__link mgr-nav__link #{'manager-nav__link--active mgr-nav__link--active' if controller_path == 'manager/orders'}" do %>
+              <span class="mgr-nav__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                  <rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+                </svg>
+              </span>
               <span>Orders</span>
             <% end %>
-            <%= link_to manager_marketing_studio_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/marketing_studio'}" do %>
-              <span>Marketing Studio</span>
-            <% end %>
-            <%= link_to manager_categories_path, class: "manager-nav__link #{'manager-nav__link--active' if controller_path == 'manager/categories'}" do %>
+
+            <%= link_to manager_categories_path, class: "manager-nav__link mgr-nav__link #{'manager-nav__link--active mgr-nav__link--active' if controller_path == 'manager/categories'}" do %>
+              <span class="mgr-nav__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+                  <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                </svg>
+              </span>
               <span>Categories</span>
             <% end %>
-            <%= link_to products_path, class: "manager-nav__link" do %>
+
+            <%= link_to manager_marketing_studio_path, class: "manager-nav__link mgr-nav__link #{'manager-nav__link--active mgr-nav__link--active' if controller_path == 'manager/marketing_studio'}" do %>
+              <span class="mgr-nav__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                </svg>
+              </span>
+              <span>Marketing Studio</span>
+            <% end %>
+
+            <%= link_to portal_ai_query_path, class: "manager-nav__link mgr-nav__link #{'manager-nav__link--active mgr-nav__link--active' if controller_path == 'portal/ai_queries'}" do %>
+              <span class="mgr-nav__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </span>
+              <span>AI Query</span>
+            <% end %>
+
+            <%= link_to products_path, class: "manager-nav__link mgr-nav__link" do %>
+              <span class="mgr-nav__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 001.99 1.61h9.72a2 2 0 001.99-1.61L23 6H6"/>
+                </svg>
+              </span>
               <span>Storefront</span>
+              <span class="mgr-nav__ext-icon">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </span>
             <% end %>
           </nav>
 
-          <div class="manager-sidebar__footer">
-            <div class="manager-user-card">
-              <span><%= current_user.name.to_s.first.presence || "M" %></span>
-              <div>
+          <div class="manager-sidebar__footer mgr-sidebar__footer">
+            <div class="mgr-sidebar__divider"></div>
+            <div class="manager-user-card mgr-user-card">
+              <span class="mgr-avatar">
+                <%= (current_user.name.to_s.first.presence || "M").upcase %>
+              </span>
+              <div class="mgr-user-info">
                 <strong><%= current_user.name.presence || "Manager" %></strong>
                 <small><%= current_user.email %></small>
               </div>
             </div>
-            <%= button_to "Logout", manager_logout_path, method: :delete, class: "manager-logout" %>
+            <%= button_to "Logout", manager_logout_path, method: :delete, class: "manager-logout mgr-logout" %>
           </div>
         </aside>
 
@@ -88,7 +157,7 @@
               <%= nav_link_to "Orders", admin_orders_path, class: "portal-nav__link" %>
               <%= button_to "Logout", admin_logout_path, method: :delete, class: "button button--ghost" %>
             <% elsif portal_signed_in?(:manager) %>
-              <%= nav_link_to "Dashboard", manager_dashboard_path, class: "portal-nav__link" %>
+              <%= nav_link_to "Dashboard", manager_root_path, class: "portal-nav__link" %>
               <%= nav_link_to "Inventory", manager_inventory_index_path, class: "portal-nav__link" %>
               <%= nav_link_to "Orders", manager_orders_path, class: "portal-nav__link" %>
               <%= button_to "Logout", manager_logout_path, method: :delete, class: "button button--ghost" %>
@@ -119,9 +188,6 @@
 
         <%= yield %>
       </main>
-    <% end %>
-    <% if portal_signed_in?(:manager) %>
-      <%= render "manager/search/palette" %>
     <% end %>
   </body>
 </html>

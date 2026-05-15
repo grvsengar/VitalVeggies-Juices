@@ -1,14 +1,19 @@
 <% content_for :title, "Manager Products" %>
 
-<section class="manager-page">
-  <div class="manager-page__header">
+<section class="manager-page mgr-page">
+  <div class="manager-page__header mgr-page__header">
     <div>
-      <h1>Products</h1>
-      <p><%= Date.current.strftime("%A %d %B, %Y") %></p>
+      <h1 class="mgr-page-title">Products</h1>
+      <p class="mgr-page-date"><%= Date.current.strftime("%A, %d %B %Y") %></p>
     </div>
-    <div class="manager-action-row">
-      <%= link_to "+ Add product", new_manager_product_path, class: "manager-primary-action" %>
-      <%= link_to "Update stock", manager_inventory_index_path, class: "manager-secondary-action" %>
+    <div class="manager-action-row mgr-header-actions">
+      <%= link_to new_manager_product_path, class: "manager-primary-action mgr-btn-primary" do %>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Product
+      <% end %>
+      <%= link_to "Update Stock", manager_inventory_index_path, class: "manager-secondary-action mgr-btn-secondary" %>
     </div>
   </div>
 
@@ -20,11 +25,11 @@
     <%= form.submit "Filter", class: "manager-primary-action" %>
   <% end %>
 
-  <article class="manager-card">
-    <div class="manager-table manager-table--products">
-      <div class="manager-table__head">
+  <article class="manager-card mgr-card">
+    <div class="manager-table manager-table--products mgr-table mgr-table--products">
+      <div class="manager-table__head mgr-table__head">
         <span>Product</span>
-        <span>SKU</span>
+        <span>SKU / Type</span>
         <span>Category</span>
         <span>Price</span>
         <span>Stock</span>

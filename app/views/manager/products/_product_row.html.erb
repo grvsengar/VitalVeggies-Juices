@@ -1,14 +1,33 @@
+<%
+  kind_colors = { "juice" => "mgr-kind--blue", "fruit" => "mgr-kind--orange", "vegetable" => "mgr-kind--green", "combo" => "mgr-kind--purple" }
+  kind_class = kind_colors[product.product_kind.to_s] || "mgr-kind--blue"
+  stock_pct = [[(product.stock_quantity.to_f / 50 * 100), 0].max, 100].min
+  stock_bar_class = product.stock_quantity == 0 ? "mgr-bar--red" : product.stock_quantity <= 5 ? "mgr-bar--orange" : "mgr-bar--green"
+%>
+
 <%= turbo_frame_tag dom_id(product, :manager_product_row), class: "manager-live-row product-live-region" do %>
-  <%= link_to edit_manager_inventory_path(product), class: "manager-table__row", data: { turbo_frame: "_top" } do %>
-    <span class="manager-product-cell">
-      <%= image_tag product_image_path(product), alt: product.name, loading: "lazy", decoding: "async" %>
-      <strong><%= product.name %></strong>
+  <%= link_to edit_manager_inventory_path(product), class: "manager-table__row mgr-table__row", data: { turbo_frame: "_top" } do %>
+    <span class="manager-product-cell mgr-product-cell">
+      <span class="mgr-product-thumb">
+        <%= image_tag product_image_path(product), alt: product.name, loading: "lazy", decoding: "async" %>
+      </span>
+      <span class="mgr-product-name-wrap">
+        <strong><%= product.name %></strong>
+      </span>
     </span>
-    <span><%= product.sku %></span>
+    <span class="mgr-sku-cell">
+      <span class="mgr-sku"><%= product.sku %></span>
+      <span class="mgr-kind-badge <%= kind_class %>"><%= product.product_kind.to_s.humanize %></span>
+    </span>
     <span><%= product.category.name %></span>
-    <span><%= money(product.price) %></span>
-    <span><%= product.stock_quantity %></span>
-    <span class="<%= product.active? ? 'manager-pill manager-pill--ok' : 'manager-pill manager-pill--danger' %>">
+    <span class="mgr-amount"><%= money(product.price) %></span>
+    <span class="mgr-stock-cell">
+      <span class="mgr-stock-num"><%= product.stock_quantity %></span>
+      <div class="mgr-mini-bar">
+        <div class="mgr-mini-bar__fill <%= stock_bar_class %>" style="width: <%= stock_pct %>%"></div>
+      </div>
+    </span>
+    <span class="<%= product.active? ? 'manager-pill manager-pill--ok' : 'manager-pill manager-pill--danger' %> mgr-status-badge">
       <%= product.active? ? "Active" : "Hidden" %>
     </span>
   <% end %>
