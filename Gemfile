@@ -62,7 +62,7 @@ end
 
 group :test do
   # Rails 8.0.4's test runner is not compatible with minitest 6.x.
-  gem "minitest", "< 6"
+  gem "minitest", "< 7"
 
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
